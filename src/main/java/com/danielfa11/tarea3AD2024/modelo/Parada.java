@@ -51,6 +51,7 @@ public class Parada implements Serializable{
     @OneToMany(mappedBy="parada",cascade= CascadeType.ALL)
     private List <Estancia> estancias = new ArrayList<>();
     
+    
     // Constructores   
     
     public Parada(Long id, String nombre, char region, String responsable) {

@@ -1,22 +1,30 @@
 package com.danielfa11.tarea3AD2024.modelo;
 
+import java.io.Serializable;
+import java.util.HashSet;
 import java.util.Objects;
+import java.util.Set;
 
-public class Servicio {
 
+public class Servicio implements Serializable{
+
+	private static final long serialVersionUID = 1L;
+	
 	private Long id;
 	private String nombre;
 	private double precio;
 	
-	
+	private Set<Long> conjuntos = new HashSet<>();
+	private Set<Long> paradas = new HashSet<>();
+
 	// Constructores
 	
 	public Servicio(Long id, String nombre, double precio) {
-		super();
-		this.id = id;
-		this.nombre = nombre;
-		this.precio = precio;
-	}
+			super();
+			this.id = id;
+			this.nombre = nombre;
+			this.precio = precio;
+		}
 	
 	public Servicio() {
 		
@@ -48,11 +56,27 @@ public class Servicio {
 		this.precio = precio;
 	}
 
-	// Metodos
+	public Set<Long> getConjuntos() {
+		return conjuntos;
+	}
+
+	public void setConjuntos(Set<Long> conjuntos) {
+		this.conjuntos = conjuntos;
+	}	
 	
+	public Set<Long> getParadas() {
+		return paradas;
+	}
+
+	public void setParadas(Set<Long> paradas) {
+		this.paradas = paradas;
+	}
+	
+	// Metodos
+
 	@Override
 	public int hashCode() {
-		return Objects.hash(id, nombre, precio);
+		return Objects.hash(conjuntos, id, nombre, paradas, precio);
 	}
 
 	@Override
@@ -64,16 +88,20 @@ public class Servicio {
 		if (getClass() != obj.getClass())
 			return false;
 		Servicio other = (Servicio) obj;
-		return Objects.equals(id, other.id) && Objects.equals(nombre, other.nombre)
+		return Objects.equals(conjuntos, other.conjuntos) && Objects.equals(id, other.id)
+				&& Objects.equals(nombre, other.nombre) && Objects.equals(paradas, other.paradas)
 				&& Double.doubleToLongBits(precio) == Double.doubleToLongBits(other.precio);
 	}
 
 	@Override
 	public String toString() {
-		return "Servicio [id=" + id + ", nombre=" + nombre + ", precio=" + precio + "]";
+		return "Servicio [id=" + id + ", nombre=" + nombre + ", precio=" + precio + ", conjuntos=" + conjuntos
+				+ ", paradas=" + paradas + "]";
 	}
+
 	
 	
+
 	
 	
 	
