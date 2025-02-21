@@ -23,9 +23,7 @@ public class Db4o {
 	}
 	
 	public void closeDb4o() {
-		if(db!=null) {
-			db.close();
-		}
+		db.close();
 	}
 
 	

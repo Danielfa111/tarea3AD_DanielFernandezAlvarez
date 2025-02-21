@@ -135,15 +135,15 @@ public class ResponsableController implements Initializable{
 		
 		// Sellar Parada
 		
-		lblNombreParada.setText("Nombre de la Parada: "+parada.getNombre() );
-		lblRegionParada.setText("Region de la Parada: "+parada.getRegion() );
-		lblResponsableParada.setText("Responsable de la Parada: "+parada.getResponsable() );
+		lblNombreParada.setText("Nombre: "+parada.getNombre() );
+		lblRegionParada.setText("Region: "+parada.getRegion() );
+		lblResponsableParada.setText("Responsable: "+parada.getResponsable() );
 		
 		// Exportar Parada
 		
-		lblNombreParadaExportar.setText("Nombre de la Parada: "+parada.getNombre() );
-		lblRegionParadaExportar.setText("Region de la Parada: "+parada.getRegion() );
-		lblResponsableParadaExportar.setText("Responsable de la Parada: "+parada.getResponsable() );
+		lblNombreParadaExportar.setText("Nombre: "+parada.getNombre() );
+		lblRegionParadaExportar.setText("Region: "+parada.getRegion() );
+		lblResponsableParadaExportar.setText("Responsable: "+parada.getResponsable() );
 		
 		tablaEditar.setItems(estanciasTabla);
 		

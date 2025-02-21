@@ -10,6 +10,8 @@ import com.danielfa11.tarea3AD2024.modelo.ConjuntoContratado;
 import com.danielfa11.tarea3AD2024.modelo.Servicio;
 import com.db4o.ObjectContainer;
 import com.db4o.ObjectSet;
+import com.db4o.ext.DatabaseClosedException;
+import com.db4o.ext.DatabaseReadOnlyException;
 import com.db4o.query.Predicate;
 import com.db4o.query.Query;
 
@@ -23,11 +25,25 @@ public class DB4ORepository {
 	private ObjectContainer db = db4o.getDb4o();
 	
 	public void storeServicio(Servicio servicio) {
-		db.store(servicio);
+		try {
+			db.store(servicio);
+			db.commit();
+		} catch(DatabaseClosedException e) {
+			db.rollback();
+		} catch(DatabaseReadOnlyException e) {
+			db.rollback();
+		}
 	}
 	
 	public void storeConjuntoContratado(ConjuntoContratado cc) {
-		db.store(cc);
+		try {
+			db.store(cc);
+			db.commit();
+		} catch(DatabaseClosedException e) {
+			db.rollback();
+		} catch(DatabaseReadOnlyException e) {
+			db.rollback();
+		}
 	}
 	
 	public Servicio retrieveServicio(Long id) {

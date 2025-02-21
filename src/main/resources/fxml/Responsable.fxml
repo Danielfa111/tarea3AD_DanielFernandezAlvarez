@@ -3,6 +3,7 @@
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.CheckBox?>
+<?import javafx.scene.control.ChoiceBox?>
 <?import javafx.scene.control.DatePicker?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.Menu?>
@@ -26,7 +27,7 @@
    <center>
       <Pane prefWidth="469.0">
          <children>
-            <GridPane fx:id="panelPrincipal" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="425.0" prefWidth="500.0">
+            <GridPane fx:id="panelPrincipal" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="425.0" prefWidth="500.0" visible="false">
               <columnConstraints>
                 <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
               </columnConstraints>
@@ -55,7 +56,7 @@
                   </HBox>
                </children>
             </GridPane>
-            <GridPane fx:id="panelSellar" prefHeight="426.0" prefWidth="521.0" visible="false">
+            <GridPane fx:id="panelSellar" prefHeight="428.0" prefWidth="500.0">
               <columnConstraints>
                 <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
               </columnConstraints>
@@ -64,9 +65,9 @@
                   <RowConstraints maxHeight="301.0" minHeight="10.0" prefHeight="265.0" vgrow="SOMETIMES" />
               </rowConstraints>
                <children>
-                  <HBox prefHeight="100.0" prefWidth="200.0">
+                  <Pane>
                      <children>
-                        <GridPane prefHeight="125.0" prefWidth="501.0">
+                        <GridPane layoutX="11.0" layoutY="12.0" prefHeight="157.0" prefWidth="479.0" style="-fx-background-color: #022340; -fx-border-color: #DAEAF9; -fx-border-width: 4;">
                           <columnConstraints>
                             <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
                           </columnConstraints>
@@ -122,12 +123,13 @@
                            </children>
                         </GridPane>
                      </children>
-                  </HBox>
+                  </Pane>
                   <Pane prefHeight="200.0" prefWidth="200.0" GridPane.rowIndex="1">
                      <children>
-                        <GridPane layoutX="111.0" layoutY="44.0" prefHeight="194.0" prefWidth="300.0">
+                        <GridPane layoutX="12.0" layoutY="35.0" prefHeight="186.0" prefWidth="476.0" style="-fx-background-color: #022340; -fx-border-color: #DAEAF9; -fx-border-width: 4;">
                           <columnConstraints>
                             <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+                              <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
                           </columnConstraints>
                           <rowConstraints>
                             <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
@@ -142,7 +144,7 @@
                                     <Insets left="10.0" />
                                  </GridPane.margin>
                                  <children>
-                                    <Label text="Id del Peregrino a sellar" textFill="#daeaf9">
+                                    <Label prefHeight="35.0" prefWidth="170.0" text="Id del Peregrino" textFill="#daeaf9">
                                        <font>
                                           <Font size="24.0" />
                                        </font>
@@ -154,7 +156,7 @@
                                     <Insets left="10.0" />
                                  </GridPane.margin>
                                  <children>
-                                    <TextField fx:id="txtId" maxWidth="250.0" prefHeight="25.0" prefWidth="254.0">
+                                    <TextField fx:id="txtId" maxWidth="250.0" prefHeight="25.0" prefWidth="170.0">
                                        <opaqueInsets>
                                           <Insets />
                                        </opaqueInsets>
@@ -169,7 +171,7 @@
                                     <Insets left="10.0" />
                                  </GridPane.margin>
                                  <children>
-                                    <Label text="¿Se va a alojar el peregrino?" textFill="#daeaf9">
+                                    <Label text="¿Se va a alojar?" textFill="#daeaf9">
                                        <font>
                                           <Font size="18.0" />
                                        </font>
@@ -198,13 +200,19 @@
                                     </CheckBox>
                                  </children>
                               </HBox>
-                              <HBox alignment="CENTER" GridPane.rowIndex="4">
+                              <HBox alignment="BOTTOM_LEFT" prefWidth="258.0" GridPane.columnIndex="1">
                                  <children>
-                                    <Button mnemonicParsing="false" onAction="#clickSellar" style="-fx-background-color: #63A1D9;" text="Sellar" textFill="#daeaf9" />
+                                    <Label text="Servicios" textFill="#daeaf9">
+                                       <font>
+                                          <Font size="24.0" />
+                                       </font>
+                                    </Label>
                                  </children>
                               </HBox>
+                              <ChoiceBox prefWidth="150.0" GridPane.columnIndex="1" GridPane.rowIndex="1" />
                            </children>
                         </GridPane>
+                        <Button layoutX="235.0" layoutY="238.0" mnemonicParsing="false" onAction="#clickSellar" style="-fx-background-color: #63A1D9;" text="Sellar" textFill="#daeaf9" />
                      </children>
                   </Pane>
                </children>

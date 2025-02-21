@@ -10,12 +10,12 @@ public class Servicio implements Serializable{
 
 	private static final long serialVersionUID = 1L;
 	
-	private Long id;
-	private String nombre;
-	private double precio;
+	protected Long id;
+	protected String nombre;
+	protected double precio;
 	
-	private Set<Long> conjuntos = new HashSet<>();
-	private Set<Long> paradas = new HashSet<>();
+	protected Set<Long> conjuntos = new HashSet<>();
+	protected Set<Long> paradas = new HashSet<>();
 
 	// Constructores
 	
