@@ -9,11 +9,10 @@ import com.db4o.ObjectContainer;
 @Component
 public class Db4o {
 
-	private final String DB4OFILENAME = "/db4o/db4o.db4o";
-	private ObjectContainer db;
+	private final static String DB4OFILENAME = "./src/main/resources/db4o/db4o.db4o";
+	private static ObjectContainer db;
 	
-	
-	public ObjectContainer getDb4o() {
+	public static ObjectContainer getDb4o() {
 		if(db==null) {
 			db=Db4oEmbedded.openFile(Db4oEmbedded
 					.newConfiguration(), DB4OFILENAME);

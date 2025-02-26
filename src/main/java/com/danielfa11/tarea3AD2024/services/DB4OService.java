@@ -38,4 +38,8 @@ public class DB4OService {
 		db4oRepository.updateConjuntoContratado(id, cc);
 	}
 	
+	public Long findServicioLastId() {
+		return db4oRepository.findServicioLastId();
+	}
+	
 }

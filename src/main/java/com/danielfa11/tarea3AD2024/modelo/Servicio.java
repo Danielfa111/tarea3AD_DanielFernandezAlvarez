@@ -20,7 +20,6 @@ public class Servicio implements Serializable{
 	// Constructores
 	
 	public Servicio(Long id, String nombre, double precio) {
-			super();
 			this.id = id;
 			this.nombre = nombre;
 			this.precio = precio;

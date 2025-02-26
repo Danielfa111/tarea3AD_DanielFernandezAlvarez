@@ -18,11 +18,8 @@ import com.db4o.query.Query;
 
 @Repository
 public class DB4ORepository {
-
-	@Autowired
-	private Db4o db4o;
 	
-	private ObjectContainer db = db4o.getDb4o();
+	private ObjectContainer db = Db4o.getDb4o();
 	
 	public void storeServicio(Servicio servicio) {
 		try {
@@ -110,5 +107,17 @@ public class DB4ORepository {
 		db.store(found);
 		
 	}
+	
+	public Long findServicioLastId() {
+        try {
+            Query query = db.query();
+            query.constrain(Servicio.class);
+            query.descend("id").orderDescending();
+            List<Servicio> resultado = query.execute();
+            return resultado.get(0).getId() + 1;
+        } catch (Exception e) {
+            return 1L;
+        }
+    }
 	
 }

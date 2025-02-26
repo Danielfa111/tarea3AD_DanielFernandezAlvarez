@@ -8,9 +8,12 @@
 <?import javafx.scene.control.MenuBar?>
 <?import javafx.scene.control.MenuItem?>
 <?import javafx.scene.control.PasswordField?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.image.Image?>
 <?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.layout.ColumnConstraints?>
 <?import javafx.scene.layout.GridPane?>
@@ -29,7 +32,7 @@
                   <WebView fx:id="webView" prefHeight="425.0" prefWidth="500.0" />
                </children>
             </Pane>
-            <GridPane fx:id="panelPrincipal" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="425.0" prefWidth="500.0">
+            <GridPane fx:id="panelPrincipal" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="425.0" prefWidth="500.0" visible="false">
               <columnConstraints>
                 <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
               </columnConstraints>
@@ -144,6 +147,41 @@
                   </Button>
                </children>
             </GridPane>
+            <AnchorPane fx:id="panelServicio" prefHeight="425.0" prefWidth="500.0">
+               <children>
+                  <TableView fx:id="tablaServicio" layoutX="9.0" layoutY="120.0" prefHeight="285.0" prefWidth="302.0">
+                    <columns>
+                      <TableColumn prefWidth="75.0" text="Id" />
+                      <TableColumn prefWidth="75.0" text="Nombre" />
+                        <TableColumn prefWidth="75.0" text="Region" />
+                        <TableColumn prefWidth="75.0" text="Responsable" />
+                    </columns>
+                  </TableView>
+                  <Label layoutX="324.0" layoutY="119.0" text="Nombre del Servicio" textFill="#daeaf9">
+                     <font>
+                        <Font size="18.0" />
+                     </font>
+                  </Label>
+                  <Label layoutX="323.0" layoutY="188.0" text="Precio del servicio" textFill="#daeaf9">
+                     <font>
+                        <Font size="18.0" />
+                     </font>
+                  </Label>
+                  <Label layoutX="129.0" layoutY="79.0" text="Paradas" textFill="#daeaf9">
+                     <font>
+                        <Font size="18.0" />
+                     </font>
+                  </Label>
+                  <Label layoutX="138.0" layoutY="21.0" text="Creacion de Servicios" textFill="#daeaf9">
+                     <font>
+                        <Font size="24.0" />
+                     </font>
+                  </Label>
+                  <TextField fx:id="txtNombreServicio" layoutX="324.0" layoutY="146.0" prefHeight="25.0" prefWidth="162.0" />
+                  <TextField fx:id="txtPrecio" layoutX="324.0" layoutY="215.0" prefHeight="25.0" prefWidth="162.0" />
+                  <Button layoutX="351.0" layoutY="262.0" mnemonicParsing="false" onAction="#clickCrearServicio" style="-fx-background-color: #63A1D9;" text="Registrar Servicio" textFill="#daeaf9" />
+               </children>
+            </AnchorPane>
          </children>
       </Pane>
    </center>
@@ -153,6 +191,7 @@
           <Menu mnemonicParsing="false" text="Archivo">
             <items>
                   <MenuItem fx:id="miRegistrar" mnemonicParsing="false" onAction="#clickMenuRegistrar" text="Registrar Parada" />
+                  <MenuItem mnemonicParsing="false" onAction="#clickMenuServicio" text="Crear Servicio" />
                   <MenuItem fx:id="miCSesion" mnemonicParsing="false" onAction="#clickCerrarSesion" text="Cerrar Sesión" />
               <MenuItem fx:id="miSalir" mnemonicParsing="false" onAction="#clickSalir" text="Salir" />
             </items>

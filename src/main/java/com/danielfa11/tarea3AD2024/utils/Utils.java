@@ -132,6 +132,24 @@ public class Utils {
 
     }
 	
+	public static boolean validarPrecio(String precio) {
+		String precioRegex = "^\\d+\\.\\d{2}$";
+        Pattern pattern = Pattern.compile(precioRegex);
+        Matcher matcher = pattern.matcher(precio);
+        
+        if(precio.isBlank()) {
+        	alertaPrecioVacio();
+        	return false;
+        }        
+        else if(matcher.matches()) {
+        	return true;
+        }
+        else {
+        	alertaPrecio();
+        	return false;
+        }
+	}
+	
 	public static String getKeyByValue(Map<String, String> map, String value) {
         for (Map.Entry<String, String> entry : map.entrySet()) {
             if (entry.getValue().equals(value)) {
@@ -186,6 +204,19 @@ public class Utils {
 		alerta.show();
 	}
 	
+	public static void alertaPrecioVacio() {
+		Alert alerta = new Alert(AlertType.WARNING);
+		alerta.setTitle("Precio vacio");
+		alerta.setContentText("No dejes el precio vacio");
+		alerta.show();
+	}
+	
+	public static void alertaPrecio() {
+		Alert alerta = new Alert(AlertType.WARNING);
+		alerta.setTitle("Precio invalido");
+		alerta.setContentText("Introduzca un precio valido con dos decimales");
+		alerta.show();
+	}
 	
 
 }
