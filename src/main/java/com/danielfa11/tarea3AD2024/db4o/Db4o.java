@@ -9,11 +9,25 @@ import com.db4o.ObjectContainer;
 @Component
 public class Db4o {
 
-	private final static String DB4OFILENAME = "./src/main/resources/db4o/db4o.db4o";
-	private static ObjectContainer db;
+	private static Db4o instance = null;
 	
-	public static ObjectContainer getDb4o() {
-		if(db==null) {
+	private final static String DB4OFILENAME = "./src/main/resources/db4o/db4o.db4o";
+	private static ObjectContainer db = null;
+	
+	public Db4o() {
+		
+	}
+	
+	public static Db4o getDb4o() {
+		if(instance==null) {
+			instance=new Db4o();
+			return instance;
+		}
+		return instance;
+	}
+	
+	public ObjectContainer getDb() {
+		if(db==null || db.ext().isClosed()) {
 			db=Db4oEmbedded.openFile(Db4oEmbedded
 					.newConfiguration(), DB4OFILENAME);
 			return db;
@@ -21,7 +35,7 @@ public class Db4o {
 		return db;
 	}
 	
-	public void closeDb4o() {
+	public void closeDb() {
 		db.close();
 	}
 

@@ -35,12 +35,14 @@ import javafx.scene.control.Button;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
+import javafx.scene.control.ListCell;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.SelectionMode;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
+import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Pane;
@@ -121,6 +123,34 @@ public class AdministradorController implements Initializable{
     @FXML
     private TextField txtPrecio;
         
+    
+    @FXML
+	private AnchorPane panelEditarServicio;
+	
+	@FXML
+    private TableView<Parada> tablaEditarServicio;
+        
+        @FXML
+        private TableColumn<Parada, Long> columnaIDEditar = new TableColumn<>("Id");
+        
+        @FXML
+        private TableColumn<Parada, String> columnaNombreEditar = new TableColumn<>("Nombre");
+
+        @FXML
+        private TableColumn<Parada, Character> columnaRegionEditar = new TableColumn<>("Region");     
+        
+        @FXML
+        private TableColumn<Parada, String> columnaResponsableEditar = new TableColumn<>("Responsable");     
+        
+    @FXML
+    private TextField txtNombreServicioEditar;
+    
+    @FXML
+    private TextField txtPrecioEditar;
+    
+    @FXML
+    private ComboBox<Servicio> cboxServicios;
+    
 	@Lazy
     @Autowired
     private StageManager stageManager;
@@ -137,6 +167,8 @@ public class AdministradorController implements Initializable{
     private ObservableList<Parada> paradasTabla = FXCollections.observableArrayList();
     	
     private List<Parada> paradasSeleccionadas = new ArrayList<>();
+    
+    private List<Parada> paradasSeleccionadasEditar = new ArrayList<>();
     	
 	private List<Character> regiones = Arrays.asList('A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z');
 	
@@ -148,29 +180,66 @@ public class AdministradorController implements Initializable{
 		
 		String url = getClass().getResource("/help/ayuda_peregrino.html").toExternalForm();
 		webView.getEngine().load(url);
-	
 		
+		columnaID.setCellValueFactory(new PropertyValueFactory<>("id"));
+		columnaNombre.setCellValueFactory(new PropertyValueFactory<>("nombre"));
+		columnaRegion.setCellValueFactory(new PropertyValueFactory<>("region"));
+		columnaResponsable.setCellValueFactory(new PropertyValueFactory<>("responsable"));
 		
-//		columnaID.setCellValueFactory(new PropertyValueFactory<>("id"));
-//		columnaNombre.setCellValueFactory(new PropertyValueFactory<>("nombre"));
-//		columnaRegion.setCellValueFactory(new PropertyValueFactory<>("region"));
-//		columnaResponsable.setCellValueFactory(new PropertyValueFactory<>("responsable"));
-		
-		columnaID.setCellValueFactory(cellData -> new SimpleObjectProperty<>(cellData.getValue().getId()));
-		columnaNombre.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getNombre()));
-		columnaRegion.setCellValueFactory(cellData -> new SimpleObjectProperty<>(cellData.getValue().getRegion()));
-		columnaResponsable.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getResponsable()));
-		
-//		tablaServicio.setItems(paradasTabla);
+		tablaServicio.setItems(paradasTabla);
 		
 		tablaServicio.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
 		
 		tablaServicio.getSelectionModel().getSelectedItems().addListener((ListChangeListener<Parada>) change -> {
 
+			
 			paradasSeleccionadas = tablaServicio.getSelectionModel().getSelectedItems();
 			
         });
 		
+		columnaIDEditar.setCellValueFactory(new PropertyValueFactory<>("id"));
+		columnaNombreEditar.setCellValueFactory(new PropertyValueFactory<>("nombre"));
+		columnaRegionEditar.setCellValueFactory(new PropertyValueFactory<>("region"));
+		columnaResponsableEditar.setCellValueFactory(new PropertyValueFactory<>("responsable"));
+		
+		tablaEditarServicio.setItems(paradasTabla);
+		
+		cboxServicios.valueProperty().addListener((observable, oldValue, newValue) -> {
+			
+			txtNombreServicioEditar.setText(db4oService.retrieveServicio(newValue.getId()).getNombre());
+			
+			txtPrecioEditar.setText(String.valueOf(db4oService.retrieveServicio(newValue.getId()).getPrecio()));
+			
+			tablaEditarServicio.getSelectionModel().clearSelection();
+			
+			for(Long l : cboxServicios.getValue().getParadas()) {
+				tablaEditarServicio.getSelectionModel().select(l.intValue()-1);
+			}
+			
+		});
+		
+		
+		
+		cboxServicios.setCellFactory(listView -> new ListCell<Servicio>() {
+			@Override
+            protected void updateItem(Servicio servicio, boolean empty) {
+                super.updateItem(servicio, empty);
+                if (empty || servicio == null) {
+                    setText(null);
+                } else {
+                    setText(servicio.getNombre());
+                }
+            }
+        });
+		
+		tablaEditarServicio.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);		
+		
+		tablaEditarServicio.getSelectionModel().getSelectedItems().addListener((ListChangeListener<Parada>) change -> {
+
+			paradasSeleccionadasEditar = tablaEditarServicio.getSelectionModel().getSelectedItems();
+			
+        });
+
 		cboxRegion.getItems().addAll(regiones);
 	}
 	
@@ -180,6 +249,7 @@ public class AdministradorController implements Initializable{
 		panelRegistrar.setVisible(false);	
 		panelAyuda.setVisible(false);
 		panelServicio.setVisible(false);	
+		panelEditarServicio.setVisible(false);
 		
 	}
 	
@@ -248,6 +318,8 @@ public class AdministradorController implements Initializable{
 			}
 			
 			db4oService.storeServicio(servicio);
+			txtNombreServicio.clear();
+			txtPrecio.clear();
 		}
 		
 	}
@@ -258,22 +330,36 @@ public class AdministradorController implements Initializable{
 		panelRegistrar.setVisible(true);
 		panelAyuda.setVisible(false);
 		panelServicio.setVisible(false);	
+		panelEditarServicio.setVisible(false);
 	}
 	
 	public void clickMenuServicio() {
 		
-		List<Parada> paradas = paradaService.findAll();
-	
 		paradasTabla.clear();
-		paradasTabla.setAll(paradas);
-//		paradasTabla.addAll(paradas); 
-		tablaServicio.setItems(paradasTabla);
+		paradasTabla.addAll(paradaService.findAll()); 
 		tablaServicio.refresh();
 		
 		panelPrincipal.setVisible(false);
 		panelRegistrar.setVisible(false);
 		panelAyuda.setVisible(false);
-		panelServicio.setVisible(true);	
+		panelServicio.setVisible(true);
+		panelEditarServicio.setVisible(false);
+	}
+	
+	public void clickMenuEditarServicio() {
+
+		cboxServicios.getItems().clear();
+		cboxServicios.getItems().addAll(db4oService.retrieveAllServicio());
+		
+		paradasTabla.clear();
+		paradasTabla.addAll(paradaService.findAll()); 
+		tablaEditarServicio.refresh();
+		
+		panelPrincipal.setVisible(false);
+		panelRegistrar.setVisible(false);
+		panelAyuda.setVisible(false);
+		panelServicio.setVisible(false);
+		panelEditarServicio.setVisible(true);
 	}
 	
 	public void clickCerrarSesion() {
@@ -309,7 +395,8 @@ public class AdministradorController implements Initializable{
 		panelAyuda.setVisible(true);
 		panelPrincipal.setVisible(false);
 		panelRegistrar.setVisible(false);
-		panelServicio.setVisible(false);	
+		panelServicio.setVisible(false);
+		panelEditarServicio.setVisible(false);
 		
 	}
 	

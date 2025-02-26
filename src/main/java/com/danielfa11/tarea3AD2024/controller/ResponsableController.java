@@ -39,6 +39,7 @@ import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.GridPane;
 
 @Controller
@@ -107,6 +108,9 @@ public class ResponsableController implements Initializable{
         @FXML
         private TableColumn<Estancia, String> columnaParada = new TableColumn<>("Parada");
         
+    @FXML
+    private AnchorPane panelEnvios;
+        
 	@Autowired
 	private EstanciaService estanciaService;
 
@@ -160,7 +164,6 @@ public class ResponsableController implements Initializable{
 		
 	}
 	
-//	@Transactional
 	public void clickSellar() {
 		
 		if(Utils.confirmarDatos().getResult().equals(ButtonType.OK)) {
@@ -264,11 +267,13 @@ public class ResponsableController implements Initializable{
 	
 	
 	
-	public void clickMenuExportar() {
+	public void clickMenuExportar() {	
 		
 		panelExportar.setVisible(true);
 		panelPrincipal.setVisible(false);
 		panelSellar.setVisible(false);
+		panelEnvios.setVisible(false);
+		
 	}
 	
 	public void clickMenuSellar() {
@@ -276,7 +281,15 @@ public class ResponsableController implements Initializable{
 		panelSellar.setVisible(true);
 		panelExportar.setVisible(false);
 		panelPrincipal.setVisible(false);
+		panelEnvios.setVisible(false);
 		
+	}
+	
+	public void clickMenuEnvios() {
+		panelEnvios.setVisible(true);
+		panelSellar.setVisible(false);
+		panelExportar.setVisible(false);
+		panelPrincipal.setVisible(false);
 	}
 	
 	

@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 import com.danielfa11.tarea3AD2024.modelo.ConjuntoContratado;
 import com.danielfa11.tarea3AD2024.modelo.Servicio;
 import com.danielfa11.tarea3AD2024.repositorios.DB4ORepository;
+import com.db4o.ObjectSet;
 
 @Service
 public class DB4OService {
@@ -26,8 +27,16 @@ public class DB4OService {
 		return db4oRepository.retrieveServicio(id);
 	}
 	
+	public ObjectSet<Servicio> retrieveAllServicio(){
+		return db4oRepository.retrieveAllServicio();
+	}
+	
 	public ConjuntoContratado retrieveConjuntoContratado(Long id) {
 		return db4oRepository.retrieveConjuntoContratado(id);
+	}
+	
+	public ObjectSet<ConjuntoContratado> retrieveAllConjuntoContratado(){
+		return db4oRepository.retrieveAllConjuntoContratado();
 	}
 	
 	public void updateServicio(Long id, Servicio servicio) {

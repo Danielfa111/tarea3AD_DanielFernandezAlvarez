@@ -1,9 +1,9 @@
 package com.danielfa11.tarea3AD2024.modelo;
 
 import java.io.Serializable;
-import java.util.HashSet;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
-import java.util.Set;
 
 
 public class Servicio implements Serializable{
@@ -14,8 +14,8 @@ public class Servicio implements Serializable{
 	protected String nombre;
 	protected double precio;
 	
-	protected Set<Long> conjuntos = new HashSet<>();
-	protected Set<Long> paradas = new HashSet<>();
+	protected List<Long> conjuntos = new ArrayList<>();
+	protected List<Long> paradas = new ArrayList<>();
 
 	// Constructores
 	
@@ -55,19 +55,19 @@ public class Servicio implements Serializable{
 		this.precio = precio;
 	}
 
-	public Set<Long> getConjuntos() {
+	public List<Long> getConjuntos() {
 		return conjuntos;
 	}
 
-	public void setConjuntos(Set<Long> conjuntos) {
+	public void setConjuntos(List<Long> conjuntos) {
 		this.conjuntos = conjuntos;
 	}	
 	
-	public Set<Long> getParadas() {
+	public List<Long> getParadas() {
 		return paradas;
 	}
 
-	public void setParadas(Set<Long> paradas) {
+	public void setParadas(List<Long> paradas) {
 		this.paradas = paradas;
 	}
 	

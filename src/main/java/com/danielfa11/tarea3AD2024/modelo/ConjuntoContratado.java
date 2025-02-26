@@ -1,7 +1,8 @@
 package com.danielfa11.tarea3AD2024.modelo;
 
 import java.io.Serializable;
-import java.util.HashSet;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
@@ -17,7 +18,7 @@ public class ConjuntoContratado implements Serializable{
 	
 	private Long idEstancia;
 	
-	private Set<Long> servicios = new HashSet<>();
+	private List<Long> servicios = new ArrayList<>();
 
 	// Constructores
 	
@@ -76,11 +77,11 @@ public class ConjuntoContratado implements Serializable{
 		this.idEstancia = idEstancia;
 	}
 
-	public Set<Long> getServicios() {
+	public List<Long> getServicios() {
 		return servicios;
 	}
 
-	public void setServicios(Set<Long> servicios) {
+	public void setServicios(List<Long> servicios) {
 		this.servicios = servicios;
 	}
 	
