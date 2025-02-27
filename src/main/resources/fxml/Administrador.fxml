@@ -214,7 +214,7 @@
                   </Label>
                   <TextField fx:id="txtNombreServicioEditar" layoutX="317.0" layoutY="215.0" prefHeight="25.0" prefWidth="162.0" />
                   <TextField fx:id="txtPrecioEditar" layoutX="317.0" layoutY="284.0" prefHeight="25.0" prefWidth="162.0" />
-                  <Button layoutX="353.0" layoutY="327.0" mnemonicParsing="false" onAction="#clickCrearServicio" style="-fx-background-color: #63A1D9;" text="Editar Servicio" textFill="#daeaf9" />
+                  <Button layoutX="353.0" layoutY="327.0" mnemonicParsing="false" onAction="#clickEditarServicio" style="-fx-background-color: #63A1D9;" text="Editar Servicio" textFill="#daeaf9" />
                   <Label layoutX="315.0" layoutY="120.0" text="Servicio" textFill="#daeaf9">
                      <font>
                         <Font size="18.0" />

@@ -17,4 +17,6 @@ public interface EstanciaRepository extends JpaRepository<Estancia, Long> {
 	List<Estancia> findByPeregrino(Peregrino peregrino);
 	
 	List<Estancia> findByFechaBetweenAndParada(LocalDate fecha1, LocalDate fecha2, Parada IdParada);
+	
+	Estancia findTopByOrderByIdDesc();
 }

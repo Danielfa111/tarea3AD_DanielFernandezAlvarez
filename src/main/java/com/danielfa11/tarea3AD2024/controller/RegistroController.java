@@ -141,7 +141,7 @@ public class RegistroController implements Initializable{
 				peregrino.setNacionalidad(Utils.getDiccionarioPaises().get(cboxNacionalidad.getValue()));
 				peregrino.setCarnet(carnet);
 				peregrino.getParadas().add(parada);
-				
+				peregrino = peregrinoService.save(peregrino);
 				
 				parada.getPeregrinos().add(peregrino);
 				parada = paradaService.save(parada);						
@@ -151,11 +151,23 @@ public class RegistroController implements Initializable{
 				usuario.setContraseña(ptxtContraseña.getText());
 				usuario.setCorreo(txtCorreo.getText());
 				usuario.setRol("Peregrino");
-				usuario.setId(peregrinoService.findTopByOrderByIdDesc().getId());
+				if(peregrinoService.findTopByOrderByIdDesc()==null) {
+					usuario.setId(1L);
+				}
+				else {
+					usuario.setId(peregrinoService.findTopByOrderByIdDesc().getId());
+				}
 				
 				usuario = usuarioService.save(usuario);
 				
-				Sesion.getSesion().setId(peregrinoService.findTopByOrderByIdDesc().getId());
+				if(peregrinoService.findTopByOrderByIdDesc()==null) {
+					Sesion.getSesion().setId(1L);
+				}
+				else {
+					Sesion.getSesion().setId(peregrinoService.findTopByOrderByIdDesc().getId());
+				}
+				
+				
 				Sesion.getSesion().setPerfil(usuario.getRol());
 				Sesion.getSesion().setUsuario(usuario.getUsuario());
 				

@@ -1,6 +1,7 @@
 package com.danielfa11.tarea3AD2024.controller;
 
 import java.net.URL;
+import java.text.DecimalFormat;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -13,10 +14,14 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Controller;
 
 import com.danielfa11.tarea3AD2024.config.StageManager;
+import com.danielfa11.tarea3AD2024.modelo.ConjuntoContratado;
+import com.danielfa11.tarea3AD2024.modelo.EnvioACasa;
 import com.danielfa11.tarea3AD2024.modelo.Estancia;
 import com.danielfa11.tarea3AD2024.modelo.Parada;
 import com.danielfa11.tarea3AD2024.modelo.Peregrino;
+import com.danielfa11.tarea3AD2024.modelo.Servicio;
 import com.danielfa11.tarea3AD2024.modelo.Sesion;
+import com.danielfa11.tarea3AD2024.services.DB4OService;
 import com.danielfa11.tarea3AD2024.services.EstanciaService;
 import com.danielfa11.tarea3AD2024.services.ParadaService;
 import com.danielfa11.tarea3AD2024.services.PeregrinoService;
@@ -26,6 +31,7 @@ import com.danielfa11.tarea3AD2024.view.FxmlView;
 import javafx.application.Platform;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
+import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -33,10 +39,12 @@ import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.CheckBox;
+import javafx.scene.control.ComboBox;
 import javafx.scene.control.DatePicker;
 import javafx.scene.control.Label;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
+import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.AnchorPane;
@@ -71,6 +79,54 @@ public class ResponsableController implements Initializable{
 	
 	@FXML
 	private CheckBox ckVip;
+	
+	@FXML
+	private Label lblServicios;
+	
+	@FXML
+	private CheckBox ckServicios;
+	
+	@FXML
+	private AnchorPane panelConjunto;
+	
+	@FXML
+	private TableView<Servicio> tablaServicios;
+	
+		@FXML
+		private TableColumn<Servicio, String> columnaServicio;
+		
+		@FXML
+		private TableColumn<Servicio, Double> columnaPrecio;
+	
+	@FXML
+	private ComboBox<String> cboxPago;
+	
+	@FXML
+	private AnchorPane panelEnvio;
+	
+		@FXML
+		private TextField txtDireccion;
+		
+		@FXML
+		private TextField txtLocalidad;
+
+		@FXML
+		private TextField txtPeso;
+		
+		@FXML
+		private TextField txtX;
+		
+		@FXML
+		private TextField txtY;
+		
+		@FXML
+		private TextField txtZ;
+		
+		@FXML
+		private CheckBox ckUrgente;
+	
+	@FXML
+	private TextArea txtExtra;
 	
 	@FXML
 	private GridPane panelExportar;
@@ -111,6 +167,9 @@ public class ResponsableController implements Initializable{
     @FXML
     private AnchorPane panelEnvios;
         
+    @Autowired
+    private DB4OService db4oService;
+    
 	@Autowired
 	private EstanciaService estanciaService;
 
@@ -130,9 +189,54 @@ public class ResponsableController implements Initializable{
 	
 	private ObservableList<Estancia> estanciasTabla = FXCollections.observableArrayList(estancias);
 	
+	private List<Servicio> serviciosSeleccionados = new ArrayList<>();
+	
+	private ObservableList<Servicio> serviciosTabla = FXCollections.observableArrayList();
+	
+	private boolean visible = false;
+	
+	
 	@Override
 	public void initialize(URL location, ResourceBundle resources) {
 	
+		for(Servicio s : db4oService.retrieveAllServicio()) {
+			
+			if(s.getParadas().contains(Sesion.getSesion().getId())) {
+				serviciosTabla.add(s);
+				
+			}			
+		}
+		
+		tablaServicios.setItems(serviciosTabla);
+		
+		columnaServicio.setCellValueFactory(new PropertyValueFactory<>("nombre"));
+		columnaPrecio.setCellValueFactory(new PropertyValueFactory<>("precio"));
+		
+		cboxPago.getItems().addAll("Efectivo", "Tarjeta", "Bizum");
+		
+		tablaServicios.getSelectionModel().getSelectedItems().addListener((ListChangeListener<Servicio>) change -> {
+			
+			serviciosSeleccionados = tablaServicios.getSelectionModel().getSelectedItems();
+			
+			panelEnvio.setVisible(false);
+			
+			for(Servicio s : serviciosSeleccionados) {
+				
+				if(s.getNombre().equals("Envio a Casa")) {
+					panelEnvio.setVisible(true);
+				}
+				
+			}
+			
+        });
+		
+		ckServicios.setOnAction(event -> {
+			
+			visible = !visible;		
+			panelConjunto.setVisible(visible);
+			
+		});
+		
 		lblBienvenido.setText("Bienvenido/a, "+Sesion.getSesion().getUsuario());
 		
 		parada = paradaService.find(Sesion.getSesion().getId());	
@@ -217,6 +321,54 @@ public class ResponsableController implements Initializable{
 
 						peregrino.getEstancias().add(estancia);
 						peregrinoService.save(peregrino);
+						
+						if(visible) {
+						
+							ConjuntoContratado cc = new ConjuntoContratado();
+							
+							cc.setIdEstancia(estanciaService.findTopByOrderByIdDesc().getId());
+							
+							if(validarServicios() && validarPago()) {
+								
+								double precio = 0.00;
+								
+								switch(cboxPago.getValue()) {
+								
+									case "Tarjeta" -> cc.setModoPago('T');
+									
+									case "Efectivo" -> cc.setModoPago('E');
+									
+									case "Bizum" -> cc.setModoPago('B');
+								
+								}
+								
+								cc.setExtra(txtExtra.getText());
+								
+								for(Servicio s : serviciosSeleccionados) {
+									
+									precio+=s.getPrecio();
+									cc.getServicios().add(s.getId());
+								}
+								
+								DecimalFormat df = new DecimalFormat("#.00");
+								
+								precio = Double.valueOf(df.format(precio));
+								
+								cc.setPrecioTotal(precio);
+								
+								if(panelEnvio.isVisible()) {
+									
+									Servicio s = new Servicio(); 
+									
+									EnvioACasa e = new EnvioACasa();
+
+									
+								}
+								
+							}
+						}
+						
+						
 
 					}
 				}
@@ -334,12 +486,48 @@ public class ResponsableController implements Initializable{
         	return false;
         }
     }
+	
+	private boolean validarServicios() {
+		if(serviciosSeleccionados.size()>0) {
+			return true;
+		}
+		else {
+			alertaServiciosVacios();
+			return false;
+		}
+	}
+	
+	private boolean validarPago() {
+		if(cboxPago.getValue().isEmpty()) {
+			alertaPagoVacio();
+			return false;
+		}
+		else {
+			return true;
+		}
+	}
+	
+	private void alertaPagoVacio() {
+		Alert alerta = new Alert(AlertType.WARNING);
+		alerta.setTitle("Metodo de pago sin seleccionar");
+		alerta.setContentText("Selecciona metodo de pago");
+		alerta.show();
+	}
+	
 	private void alertaIdVacio() {
 		Alert alerta = new Alert(AlertType.WARNING);
 		alerta.setTitle("Id vacio");
 		alerta.setContentText("Introduce el id del peregrino");
 		alerta.show();
 	}
+	
+	private void alertaServiciosVacios() {
+		Alert alerta = new Alert(AlertType.WARNING);
+		alerta.setTitle("No hay servicios");
+		alerta.setContentText("Selecciona algun servicio");
+		alerta.show();
+	}
+	
 	
 	private void alertaIdIncorrecto() {
 		Alert alerta = new Alert(AlertType.WARNING);

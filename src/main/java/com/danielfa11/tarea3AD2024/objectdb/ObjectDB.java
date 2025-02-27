@@ -2,8 +2,6 @@ package com.danielfa11.tarea3AD2024.objectdb;
 
 import org.springframework.stereotype.Component;
 
-import com.db4o.Db4oEmbedded;
-
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityManagerFactory;
 import jakarta.persistence.Persistence;

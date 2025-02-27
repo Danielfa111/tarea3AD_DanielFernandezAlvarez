@@ -41,5 +41,9 @@ public class EstanciaService {
 	public List<Estancia> findByFechaBetweenAndParada(LocalDate fecha1, LocalDate fecha2, Parada Parada){
 		return estanciaRepository.findByFechaBetweenAndParada(fecha1, fecha2, Parada);
 	}
+	
+	public Estancia findTopByOrderByIdDesc() {
+		return estanciaRepository.findTopByOrderByIdDesc();
+	}
 
 }

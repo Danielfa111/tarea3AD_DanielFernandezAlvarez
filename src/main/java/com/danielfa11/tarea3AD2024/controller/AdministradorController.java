@@ -320,8 +320,32 @@ public class AdministradorController implements Initializable{
 			db4oService.storeServicio(servicio);
 			txtNombreServicio.clear();
 			txtPrecio.clear();
+			servicioCreado();
 		}
 		
+	}
+	
+	public void clickEditarServicio() {
+		if(validarEleccion()
+			&& Utils.validarNombre(txtNombreServicioEditar.getText())
+			&& Utils.validarPrecio(txtPrecioEditar.getText())
+			){
+			Servicio s = cboxServicios.getValue();
+			
+			s.setNombre(txtNombreServicioEditar.getText());
+			s.setPrecio(Double.valueOf(txtPrecioEditar.getText()));
+			
+			s.getParadas().clear();
+			
+			for(Parada p : paradasSeleccionadasEditar) {
+				s.getParadas().add(p.getId());
+			}
+			
+			db4oService.storeServicio(s);
+			servicioEditado();
+			
+			
+		}
 	}
 	
 	
@@ -402,6 +426,17 @@ public class AdministradorController implements Initializable{
 	
 	
 	
+	private boolean validarEleccion() {
+		if(cboxServicios.getValue() == null) {
+			alertaServiciosVacio();
+			return false;
+		}
+		else {
+			return true;
+		}
+	}
+	
+	
 	private boolean validarRegion() {
 		if(cboxRegion.getValue() == null) {
 			alertaRegionVacia();
@@ -418,6 +453,15 @@ public class AdministradorController implements Initializable{
 		alerta.setContentText("Escoge region");
 		alerta.show();
 	}
+	
+	
+	private void alertaServiciosVacio() {
+		Alert alerta = new Alert(AlertType.WARNING);
+		alerta.setTitle("Servicio no escogido");
+		alerta.setContentText("Escoge servicio");
+		alerta.show();
+	}
+	
 
 	private boolean usuarioExistente(String usuario) {
 		
@@ -442,6 +486,20 @@ public class AdministradorController implements Initializable{
 		Alert alerta = new Alert(AlertType.WARNING);
 		alerta.setTitle("Usuario vacio");
 		alerta.setContentText("Introduce un usuario");
+		alerta.show();
+	}
+	
+	private void servicioCreado() {
+		Alert alerta = new Alert(AlertType.INFORMATION);
+		alerta.setTitle("Servicio creado");
+		alerta.setContentText("Servicio creado");
+		alerta.show();
+	}
+	
+	private void servicioEditado() {
+		Alert alerta = new Alert(AlertType.INFORMATION);
+		alerta.setTitle("Servicio editado");
+		alerta.setContentText("Servicio editado");
 		alerta.show();
 	}
 	
