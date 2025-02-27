@@ -2,7 +2,6 @@ package com.danielfa11.tarea3AD2024.repositorios;
 
 import java.util.List;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
 import com.danielfa11.tarea3AD2024.db4o.Db4o;
