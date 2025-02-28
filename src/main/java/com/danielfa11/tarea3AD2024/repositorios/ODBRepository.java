@@ -1,27 +1,22 @@
 package com.danielfa11.tarea3AD2024.repositorios;
 
-import java.util.List;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Repository;
 
 import com.danielfa11.tarea3AD2024.modelo.EnvioACasa;
 import com.danielfa11.tarea3AD2024.objectdb.ObjectDB;
 
 import jakarta.persistence.EntityExistsException;
 import jakarta.persistence.EntityManager;
-import jakarta.persistence.TypedQuery;
-import jakarta.persistence.criteria.CriteriaBuilder;
-import jakarta.persistence.criteria.CriteriaQuery;
-import jakarta.persistence.criteria.Root;
-import jakarta.persistence.criteria.Selection;
 
+@Repository
 public class ODBRepository {
-
-	@Autowired
-	private ObjectDB odb;
+	
+	private ObjectDB odb = ObjectDB.getObjectDB();
+	
 	
 	private EntityManager em = odb.getEntityManager();
-	private CriteriaBuilder cb = em.getCriteriaBuilder();
+//	private CriteriaBuilder cb = em.getCriteriaBuilder();
 	
 	
 	public void storeEnvio(EnvioACasa envio) {
@@ -36,27 +31,24 @@ public class ODBRepository {
 		
 	}
 	
-	public EnvioACasa retrieveEnvio(Long id) {
-		em.getTransaction().begin();
-		
-		 CriteriaQuery<EnvioACasa> q = cb.createQuery(EnvioACasa.class);
-		 Root<EnvioACasa> c = q.from(EnvioACasa.class);
-		 q.select(c);
-		 q.where(cb.equal(c.get("id"), id));
-
-		 Selection<EnvioACasa> s = q.getSelection();
-		 
-//		 s.getCompoundSelectionItems()
-		
-		
-		
-			TypedQuery<EnvioACasa> query = em.createQuery("SELECT e FROM EnvioACasa e where id=", EnvioACasa.class);
-			List<EnvioACasa> results = query.getResultList();
-			return results.getFirst();
-		
-	}
+//	public EnvioACasa retrieveEnvio(Long id) {
+//		em.getTransaction().begin();
+//		
+//		 CriteriaQuery<EnvioACasa> q = cb.createQuery(EnvioACasa.class);
+//		 Root<EnvioACasa> c = q.from(EnvioACasa.class);
+//		 q.select(c);
+//		 q.where(cb.equal(c.get("id"), id));
+//
+//		 Selection<EnvioACasa> s = q.getSelection();
+//		 
+////		 s.getCompoundSelectionItems()
+//		
+//		
+//		
+//			TypedQuery<EnvioACasa> query = em.createQuery("SELECT e FROM EnvioACasa e where id=", EnvioACasa.class);
+//			List<EnvioACasa> results = query.getResultList();
+//			return results.getFirst();
+//		
+//	}
 	
-	public void updateEnvio() {
-		
-	}
 }

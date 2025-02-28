@@ -51,4 +51,10 @@ public class DB4OService {
 		return db4oRepository.findServicioLastId();
 	}
 	
+	public Long findConjuntoContratadoLastId() {
+		return db4oRepository.findConjuntoContratadoLastId();
+	}
+	
+	
+	
 }

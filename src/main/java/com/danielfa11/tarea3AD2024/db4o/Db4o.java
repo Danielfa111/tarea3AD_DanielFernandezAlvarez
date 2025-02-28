@@ -14,7 +14,7 @@ public class Db4o {
 	private final static String DB4OFILENAME = "./src/main/resources/db4o/db4o.db4o";
 	private static ObjectContainer db = null;
 	
-	public Db4o() {
+	private Db4o() {
 		
 	}
 	

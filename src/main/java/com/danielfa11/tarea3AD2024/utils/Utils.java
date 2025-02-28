@@ -150,6 +150,9 @@ public class Utils {
         }
 	}
 	
+
+	
+	
 	public static String getKeyByValue(Map<String, String> map, String value) {
         for (Map.Entry<String, String> entry : map.entrySet()) {
             if (entry.getValue().equals(value)) {
@@ -160,6 +163,20 @@ public class Utils {
     }
 	
 	// Alertas
+	
+	public static void noHayServicios() {
+		Alert alerta = new Alert(AlertType.INFORMATION);
+		alerta.setTitle("No hay servicios creados");
+		alerta.setContentText("No hay servicios creados");
+		alerta.show();
+	}
+	
+	public static void noHayParadas() {
+		Alert alerta = new Alert(AlertType.INFORMATION);
+		alerta.setTitle("No hay paradas creados");
+		alerta.setContentText("No hay paradas creados");
+		alerta.show();
+	}
 	
 	public static Alert confirmarDatos() {
 		Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
@@ -217,6 +234,8 @@ public class Utils {
 		alerta.setContentText("Introduzca un precio valido con dos decimales");
 		alerta.show();
 	}
+	
+
 	
 
 }

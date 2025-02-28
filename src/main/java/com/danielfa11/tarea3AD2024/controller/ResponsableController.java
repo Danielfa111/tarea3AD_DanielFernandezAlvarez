@@ -15,6 +15,7 @@ import org.springframework.stereotype.Controller;
 
 import com.danielfa11.tarea3AD2024.config.StageManager;
 import com.danielfa11.tarea3AD2024.modelo.ConjuntoContratado;
+import com.danielfa11.tarea3AD2024.modelo.Direccion;
 import com.danielfa11.tarea3AD2024.modelo.EnvioACasa;
 import com.danielfa11.tarea3AD2024.modelo.Estancia;
 import com.danielfa11.tarea3AD2024.modelo.Parada;
@@ -23,6 +24,7 @@ import com.danielfa11.tarea3AD2024.modelo.Servicio;
 import com.danielfa11.tarea3AD2024.modelo.Sesion;
 import com.danielfa11.tarea3AD2024.services.DB4OService;
 import com.danielfa11.tarea3AD2024.services.EstanciaService;
+import com.danielfa11.tarea3AD2024.services.ODBService;
 import com.danielfa11.tarea3AD2024.services.ParadaService;
 import com.danielfa11.tarea3AD2024.services.PeregrinoService;
 import com.danielfa11.tarea3AD2024.utils.Utils;
@@ -72,10 +74,22 @@ public class ResponsableController implements Initializable{
 	private Label lblResponsableParada;
 	
 	@FXML
+	private Label lblDatosPeregrino;
+	
+	@FXML
+	private Label lblPeregrinoNombre;
+	
+	@FXML
+	private Label lblPeregrinoNacionalidad;
+	
+	@FXML
 	private TextField txtId;
 	
 	@FXML
 	private CheckBox ckEstancia;
+	
+	@FXML
+	private Label lblCkVip;
 	
 	@FXML
 	private CheckBox ckVip;
@@ -170,6 +184,10 @@ public class ResponsableController implements Initializable{
     @Autowired
     private DB4OService db4oService;
     
+    @Autowired
+    private ODBService odbService;
+    
+
 	@Autowired
 	private EstanciaService estanciaService;
 
@@ -179,6 +197,8 @@ public class ResponsableController implements Initializable{
 	@Autowired
 	private PeregrinoService peregrinoService;	
 
+	
+	
 	@Lazy
     @Autowired
     private StageManager stageManager;
@@ -198,14 +218,7 @@ public class ResponsableController implements Initializable{
 	
 	@Override
 	public void initialize(URL location, ResourceBundle resources) {
-	
-		for(Servicio s : db4oService.retrieveAllServicio()) {
-			
-			if(s.getParadas().contains(Sesion.getSesion().getId())) {
-				serviciosTabla.add(s);
-				
-			}			
-		}
+		
 		
 		tablaServicios.setItems(serviciosTabla);
 		
@@ -231,9 +244,15 @@ public class ResponsableController implements Initializable{
         });
 		
 		ckServicios.setOnAction(event -> {
+			if(serviciosTabla.size()>0 && !visible) {
+						
+				visible = !visible;		
+				panelConjunto.setVisible(visible);
+			}
+			else if(serviciosTabla.size()<=0){
+				noHayServiciosParada();
+			}
 			
-			visible = !visible;		
-			panelConjunto.setVisible(visible);
 			
 		});
 		
@@ -266,6 +285,54 @@ public class ResponsableController implements Initializable{
 			new SimpleStringProperty(cellData.getValue().getParada().getNombre())
 		);
 		
+		txtId.textProperty().addListener((observable, oldValue, newValue) -> {
+			if(newValue.isBlank()) {
+				lblDatosPeregrino.setVisible(false);
+				lblPeregrinoNombre.setVisible(false);
+				lblPeregrinoNacionalidad.setVisible(false);
+			}
+			else if(peregrinoService.existsById(Long.valueOf(newValue))){
+				
+				Peregrino peregrino = peregrinoService.find(Long.valueOf(txtId.getText()));	
+				
+				lblPeregrinoNombre.setText("Nombre: "+peregrino.getNombre());
+				lblPeregrinoNacionalidad.setText("Nacionalidad: "+peregrino.getNacionalidad());			
+				
+				lblDatosPeregrino.setVisible(true);
+				lblPeregrinoNombre.setVisible(true);
+				lblPeregrinoNacionalidad.setVisible(true);
+				
+				
+			}
+			else {
+				lblDatosPeregrino.setVisible(false);
+				lblPeregrinoNombre.setVisible(false);
+				lblPeregrinoNacionalidad.setVisible(false);
+			}
+			
+		});
+		
+		ckEstancia.selectedProperty().addListener((observable, oldValue, newValue) -> {
+		
+			if(ckEstancia.isSelected()) {
+				ckVip.setVisible(true);
+				lblCkVip.setVisible(true);
+				
+				ckServicios.setVisible(true);
+				lblServicios.setVisible(true);
+			}
+			else {
+				ckVip.setSelected(false);
+				ckVip.setVisible(false);
+				lblCkVip.setVisible(false);
+				
+				ckServicios.setSelected(false);
+				ckServicios.setVisible(false);
+				lblServicios.setVisible(false);
+			}
+			
+		});
+		
 	}
 	
 	public void clickSellar() {
@@ -290,12 +357,6 @@ public class ResponsableController implements Initializable{
 					alertaPeregrino();
 					}
 				else {
-					
-					Alert alert = new Alert(Alert.AlertType.INFORMATION);
-			        alert.setTitle("Informacion del peregrino");
-			        alert.setContentText("Nombre: "+peregrino.getNombre()+"\n"
-			        		+"Nacionalidad: "+peregrino.getNacionalidad());
-			        alert.showAndWait();
 			        
 					peregrino.getCarnet().setDistancia(peregrino.getCarnet().getDistancia()+5);		
 					peregrino.getParadas().add(parada);							
@@ -321,61 +382,101 @@ public class ResponsableController implements Initializable{
 
 						peregrino.getEstancias().add(estancia);
 						peregrinoService.save(peregrino);
-						
-						if(visible) {
-						
-							ConjuntoContratado cc = new ConjuntoContratado();
-							
-							cc.setIdEstancia(estanciaService.findTopByOrderByIdDesc().getId());
-							
-							if(validarServicios() && validarPago()) {
-								
-								double precio = 0.00;
-								
-								switch(cboxPago.getValue()) {
-								
-									case "Tarjeta" -> cc.setModoPago('T');
-									
-									case "Efectivo" -> cc.setModoPago('E');
-									
-									case "Bizum" -> cc.setModoPago('B');
-								
-								}
-								
-								cc.setExtra(txtExtra.getText());
-								
-								for(Servicio s : serviciosSeleccionados) {
-									
-									precio+=s.getPrecio();
-									cc.getServicios().add(s.getId());
-								}
-								
-								DecimalFormat df = new DecimalFormat("#.00");
-								
-								precio = Double.valueOf(df.format(precio));
-								
-								cc.setPrecioTotal(precio);
-								
-								if(panelEnvio.isVisible()) {
-									
-									Servicio s = new Servicio(); 
-									
-									EnvioACasa e = new EnvioACasa();
-
-									
-								}
-								
-							}
-						}
-						
-						
-
+				
 					}
 				}
 			}
 		}
 	}
 	
+	public void contratarServicios() {
+				
+		Servicio envio = new Servicio();
+		
+		if(visible) {
+			
+			ConjuntoContratado cc = new ConjuntoContratado();
+			
+			cc.setId(db4oService.findConjuntoContratadoLastId());
+			
+			cc.setIdEstancia(estanciaService.findTopByOrderByIdDesc().getId());
+			
+			if(validarServicios() && validarPago()) {
+				
+				double precio = 0.00;
+				
+				switch(cboxPago.getValue()) {
+				
+					case "Tarjeta" -> cc.setModoPago('T');
+					
+					case "Efectivo" -> cc.setModoPago('E');
+					
+					case "Bizum" -> cc.setModoPago('B');
+				
+				}
+				
+				cc.setExtra(txtExtra.getText());
+				
+				for(Servicio s : serviciosSeleccionados) {
+					
+					precio+=s.getPrecio();
+					cc.getServicios().add(s.getId());
+					
+					if(s.getNombre().equals("Envio a Casa")) {
+						envio = s;
+					}
+				}
+				
+				DecimalFormat df = new DecimalFormat("#.00");
+				
+				precio = Double.valueOf(df.format(precio).replace(',', '.'));
+				
+				cc.setPrecioTotal(precio);
+				
+				db4oService.storeConjuntoContratado(cc);
+				
+				if(panelEnvio.isVisible()) {
+					
+					if(validarDireccion(txtDireccion.getText())
+						&& Utils.validarNombre(txtLocalidad.getText())
+						&& validarPeso(txtPeso.getText())
+						&& validarVolumen(txtX.getText())
+						&& validarVolumen(txtY.getText())
+						&& validarVolumen(txtZ.getText())
+							) {
+						
+						EnvioACasa e = new EnvioACasa();
+						
+						int[] volumen = new int[3];
+						
+						volumen[0] = Integer.valueOf(txtX.getText());
+						volumen[1] = Integer.valueOf(txtY.getText());
+						volumen[2] = Integer.valueOf(txtZ.getText());
+						
+						e.setId(envio.getId());
+						e.setNombre(envio.getNombre());
+						e.setParadas(envio.getParadas());
+						e.setPrecio(envio.getPrecio());
+						e.setConjuntos(envio.getConjuntos());
+						e.getConjuntos().add(cc.getId());
+						e.setParada(Sesion.getSesion().getId());
+						
+						Direccion d = new Direccion(txtDireccion.getText(), txtLocalidad.getText());
+														
+						e.setDireccion(d);
+						e.setVolumen(volumen);
+						
+						if(ckUrgente.isSelected()) {
+							e.setUrgente(true);
+						}
+						
+						odbService.storeEnvio(e);
+						
+					}
+				}								
+			}
+		}
+	}
 	
 
 	
@@ -419,30 +520,38 @@ public class ResponsableController implements Initializable{
 	
 	
 	
-	public void clickMenuExportar() {	
+	public void clickMenuExportar() {
 		
 		panelExportar.setVisible(true);
 		panelPrincipal.setVisible(false);
 		panelSellar.setVisible(false);
-		panelEnvios.setVisible(false);
-		
 	}
 	
 	public void clickMenuSellar() {
 		
+		if(db4oService.retrieveAllServicio().size()>0) {
+			
+			for(Servicio s : db4oService.retrieveAllServicio()) {
+				
+				if(s.getParadas().contains(Sesion.getSesion().getId())) {
+					serviciosTabla.add(s);					
+				}			
+			}
+			if(!(serviciosTabla.size()>0)) {
+				noHayServiciosParada();
+			}
+			
+		}
+		else {
+			Utils.noHayServicios();
+		}
+
 		panelSellar.setVisible(true);
 		panelExportar.setVisible(false);
 		panelPrincipal.setVisible(false);
-		panelEnvios.setVisible(false);
 		
 	}
 	
-	public void clickMenuEnvios() {
-		panelEnvios.setVisible(true);
-		panelSellar.setVisible(false);
-		panelExportar.setVisible(false);
-		panelPrincipal.setVisible(false);
-	}
 	
 	
 	public void clickCerrarSesion() {
@@ -487,6 +596,64 @@ public class ResponsableController implements Initializable{
         }
     }
 	
+	private boolean validarDireccion(String direccion) {
+		
+		String regex = "^(?i)(Calle|Avda\\.?|Avenida|Plaza|Paseo|Ronda|Carretera)\\s+[A-Za-zÁÉÍÓÚáéíóúÑñ\\s\\.\\-]+,\\s*\\d+[A-Za-z]?\\s*,\\s*\\d{5}\\s+[A-Za-zÁÉÍÓÚáéíóúÑñ\\s]+$\r\n";
+		Pattern pattern = Pattern.compile(regex);
+        Matcher matcher = pattern.matcher(direccion);
+        
+        if(direccion.isBlank()){
+        	alertaDireccionVacia();
+        	return false;
+        }    
+        else if(matcher.matches()) {
+        	return true;
+        }
+        else{
+        	alertaDireccion();
+        	return false;
+        }
+				
+	}
+	
+	public boolean validarPeso(String peso) {
+		String pesoRegex = "^\\d+\\.\\d{2}$";
+        Pattern pattern = Pattern.compile(pesoRegex);
+        Matcher matcher = pattern.matcher(peso);
+        
+        if(peso.isBlank()) {
+        	alertaPesoVacio();
+        	return false;
+        }        
+        else if(matcher.matches()) {
+        	return true;
+        }
+        else {
+        	alertaPeso();
+        	return false;
+        }
+	}
+	
+	private boolean validarVolumen(String volumen) {
+		
+		String regex = "^[1-9]\\d*$\r\n";
+		Pattern pattern = Pattern.compile(regex);
+        Matcher matcher = pattern.matcher(volumen);
+        
+        if(volumen.isBlank()){
+        	alertaVolumenVacio();
+        	return false;
+        }    
+        else if(matcher.matches()) {
+        	return true;
+        }
+        else{
+        	alertaVolumen();
+        	return false;
+        }
+				
+	}
+	
 	private boolean validarServicios() {
 		if(serviciosSeleccionados.size()>0) {
 			return true;
@@ -505,6 +672,56 @@ public class ResponsableController implements Initializable{
 		else {
 			return true;
 		}
+	}
+	
+	public static void noHayServiciosParada() {
+		Alert alerta = new Alert(AlertType.INFORMATION);
+		alerta.setTitle("Parada sin servicios");
+		alerta.setContentText("Esta parada no tiene servicios");
+		alerta.show();
+	}
+	
+	private void alertaDireccionVacia() {
+		Alert alerta = new Alert(AlertType.WARNING);
+		alerta.setTitle("Direccion vacia");
+		alerta.setContentText("Introduce una direccion");
+		alerta.show();
+	}
+	
+	private void alertaDireccion() {
+		Alert alerta = new Alert(AlertType.WARNING);
+		alerta.setTitle("Direccion invalida");
+		alerta.setContentText("Introduce una direccion valida");
+		alerta.show();
+	}
+	
+	
+	public static void alertaPesoVacio() {
+		Alert alerta = new Alert(AlertType.WARNING);
+		alerta.setTitle("Peso vacio");
+		alerta.setContentText("No dejes el peso vacio");
+		alerta.show();
+	}
+	
+	public static void alertaPeso() {
+		Alert alerta = new Alert(AlertType.WARNING);
+		alerta.setTitle("Peso invalido");
+		alerta.setContentText("Introduzca un peso valido con dos decimales");
+		alerta.show();
+	}
+	
+	private void alertaVolumenVacio() {
+		Alert alerta = new Alert(AlertType.WARNING);
+		alerta.setTitle("Volumen vacio");
+		alerta.setContentText("Uno de los valores del volumen esta vacio");
+		alerta.show();
+	}
+	
+	private void alertaVolumen() {
+		Alert alerta = new Alert(AlertType.WARNING);
+		alerta.setTitle("Volumen invalido");
+		alerta.setContentText("Introduce un entero positivo en cada valor del volumen");
+		alerta.show();
 	}
 	
 	private void alertaPagoVacio() {
@@ -570,7 +787,5 @@ public class ResponsableController implements Initializable{
 		alerta.setContentText("La primera fecha es despues de la segunda fecha");
 		alerta.show();
 	}
-	
-	
 	
 }

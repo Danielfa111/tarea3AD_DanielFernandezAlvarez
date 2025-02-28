@@ -81,8 +81,7 @@ public class DB4ORepository {
 		Query query=db.query();
         query.constrain(Servicio.class);
         ObjectSet<Servicio> result=query.execute();
-        
-//        db4o.closeDb();
+
         
         return result;
 	}
@@ -121,49 +120,50 @@ public class DB4ORepository {
 	
 	public void updateServicio(Long id, Servicio servicio) {
 		
-		db = db4o.getDb();
+
+	 	db = db4o.getDb();
+
+        Query query = db.query();
+        query.constrain(Servicio.class);
+        query.descend("id").constrain(id);
+
+        ObjectSet<Servicio> resultado = query.execute();
+
+        Servicio s = resultado.next();
+
+        s.setNombre(servicio.getNombre());
+        s.setPrecio(servicio.getPrecio());
+        s.getParadas().clear();
 		
-		List<Servicio> result = db.query(new Predicate<Servicio>() {
-			public boolean match(Servicio servicio) {
-				return servicio.getId().equals(id);
-			}
-		});
-		
-		Servicio found = (Servicio) result.get(0);
-		
-		found.setConjuntos(servicio.getConjuntos());
-		found.setNombre(servicio.getNombre());
-		found.setPrecio(servicio.getPrecio());
-		found.setParadas(servicio.getParadas());
-		
-		db.store(found);
-		
-		db4o.closeDb();
-		
+		for(Long l : servicio.getParadas()) {
+			s.getParadas().add(l);
+		}
+
+        db.store(s);
+
 	}
 	
 	public void updateConjuntoContratado(Long id, ConjuntoContratado cc) {
 		
-		db = db4o.getDb();
+	 	db = db4o.getDb();
+	 	
+        Query query = db.query();
+        query.constrain(Servicio.class);
+        query.descend("id").constrain(id);
+
+        ObjectSet<ConjuntoContratado> resultado = query.execute();
+
+    	ConjuntoContratado c = resultado.next();
+
+    	c.setIdEstancia(cc.getIdEstancia());
+		c.setExtra(cc.getExtra());
+		c.setModoPago(cc.getModoPago());
+		c.setPrecioTotal(cc.getPrecioTotal());
+		c.setServicios(cc.getServicios());
 		
-		List<ConjuntoContratado> result = db.query(new Predicate<ConjuntoContratado>() {
-			public boolean match(ConjuntoContratado cc) {
-				return cc.getId().equals(id);
-			}
-		});
-		
-		ConjuntoContratado found = (ConjuntoContratado) result.get(0);	
-		
-		found.setIdEstancia(id);
-		found.setExtra(cc.getExtra());
-		found.setModoPago(cc.getModoPago());
-		found.setPrecioTotal(cc.getPrecioTotal());
-		found.setServicios(cc.getServicios());
-		
-		db.store(found);
-		
-		db4o.closeDb();
-		
+
+        db.store(c);
+
 	}
 	
 	public Long findServicioLastId() {
@@ -173,6 +173,22 @@ public class DB4ORepository {
 		try {
             Query query = db.query();
             query.constrain(Servicio.class);
+            query.descend("id").orderDescending();
+            List<Servicio> resultado = query.execute();
+            return resultado.get(0).getId() + 1;
+        } catch (Exception e) {
+        	db4o.closeDb();
+            return 1L;
+        }
+    }
+	
+	public Long findConjuntoContratadoLastId() {
+        
+		db = db4o.getDb();
+		
+		try {
+            Query query = db.query();
+            query.constrain(ConjuntoContratado.class);
             query.descend("id").orderDescending();
             List<Servicio> resultado = query.execute();
             return resultado.get(0).getId() + 1;

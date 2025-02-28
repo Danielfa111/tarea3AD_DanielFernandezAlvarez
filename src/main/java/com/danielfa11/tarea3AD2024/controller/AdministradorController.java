@@ -206,14 +206,17 @@ public class AdministradorController implements Initializable{
 		
 		cboxServicios.valueProperty().addListener((observable, oldValue, newValue) -> {
 			
-			txtNombreServicioEditar.setText(db4oService.retrieveServicio(newValue.getId()).getNombre());
+			if(newValue!=null) {
 			
-			txtPrecioEditar.setText(String.valueOf(db4oService.retrieveServicio(newValue.getId()).getPrecio()));
-			
-			tablaEditarServicio.getSelectionModel().clearSelection();
-			
-			for(Long l : cboxServicios.getValue().getParadas()) {
-				tablaEditarServicio.getSelectionModel().select(l.intValue()-1);
+				txtNombreServicioEditar.setText(db4oService.retrieveServicio(newValue.getId()).getNombre());
+				
+				txtPrecioEditar.setText(String.valueOf(db4oService.retrieveServicio(newValue.getId()).getPrecio()));
+				
+				tablaEditarServicio.getSelectionModel().clearSelection();
+				
+				for(Long l : cboxServicios.getValue().getParadas()) {
+					tablaEditarServicio.getSelectionModel().select(l.intValue()-1);
+				}
 			}
 			
 		});
@@ -303,31 +306,35 @@ public class AdministradorController implements Initializable{
 	
 	public void clickCrearServicio() {
 		
-		Servicio servicio = new Servicio();
-		
-		if(Utils.validarNombre(txtNombreServicio.getText()) 
-			&& Utils.validarPrecio(txtPrecio.getText())) {
+			Servicio servicio = new Servicio();
 			
-			
-			servicio.setId(db4oService.findServicioLastId());
-			servicio.setNombre(txtNombreServicio.getText());
-			servicio.setPrecio(Double.valueOf(txtPrecio.getText()));			
-			
-			for(Parada p : paradasSeleccionadas) {
-				servicio.getParadas().add(p.getId());
+			if(Utils.validarNombre(txtNombreServicio.getText()) 
+				&& validarServicio()
+				&& Utils.validarPrecio(txtPrecio.getText())) {
+				
+				
+				servicio.setId(db4oService.findServicioLastId());
+				servicio.setNombre(txtNombreServicio.getText());
+				servicio.setPrecio(Double.valueOf(txtPrecio.getText()));			
+				
+				for(Parada p : paradasSeleccionadas) {
+					servicio.getParadas().add(p.getId());
+				}
+				
+				db4oService.storeServicio(servicio);
+				txtNombreServicio.clear();
+				txtPrecio.clear();
+				tablaServicio.getSelectionModel().clearSelection();
+				servicioCreado();
 			}
-			
-			db4oService.storeServicio(servicio);
-			txtNombreServicio.clear();
-			txtPrecio.clear();
-			servicioCreado();
-		}
+		
 		
 	}
 	
 	public void clickEditarServicio() {
 		if(validarEleccion()
 			&& Utils.validarNombre(txtNombreServicioEditar.getText())
+			&& validarNombreRepetido()
 			&& Utils.validarPrecio(txtPrecioEditar.getText())
 			){
 			Servicio s = cboxServicios.getValue();
@@ -341,10 +348,16 @@ public class AdministradorController implements Initializable{
 				s.getParadas().add(p.getId());
 			}
 			
-			db4oService.storeServicio(s);
+			db4oService.updateServicio(s.getId(), s);
+			
+			
+			cboxServicios.getItems().clear();
+			cboxServicios.getItems().addAll(db4oService.retrieveAllServicio());
+			txtNombreServicioEditar.clear();
+			txtPrecioEditar.clear();
+			tablaEditarServicio.getSelectionModel().clearSelection();
+			
 			servicioEditado();
-			
-			
 		}
 	}
 	
@@ -360,7 +373,12 @@ public class AdministradorController implements Initializable{
 	public void clickMenuServicio() {
 		
 		paradasTabla.clear();
-		paradasTabla.addAll(paradaService.findAll()); 
+		if(paradaService.findAll() != null) {
+			paradasTabla.addAll(paradaService.findAll()); 
+		}
+		else {
+			Utils.noHayParadas();
+		}
 		tablaServicio.refresh();
 		
 		panelPrincipal.setVisible(false);
@@ -372,11 +390,20 @@ public class AdministradorController implements Initializable{
 	
 	public void clickMenuEditarServicio() {
 
-		cboxServicios.getItems().clear();
-		cboxServicios.getItems().addAll(db4oService.retrieveAllServicio());
-		
+		if(db4oService.retrieveAllServicio().size()>0) {
+			cboxServicios.getItems().clear();
+			cboxServicios.getItems().addAll(db4oService.retrieveAllServicio());
+		}
+		else {
+			Utils.noHayServicios();
+		}
 		paradasTabla.clear();
-		paradasTabla.addAll(paradaService.findAll()); 
+		if(paradaService.findAll().size()>0) {
+			paradasTabla.addAll(paradaService.findAll()); 
+		}
+		else {
+			Utils.noHayParadas();
+		}
 		tablaEditarServicio.refresh();
 		
 		panelPrincipal.setVisible(false);
@@ -424,7 +451,29 @@ public class AdministradorController implements Initializable{
 		
 	}
 	
+	private boolean validarNombreRepetido() {
+
+		for(Servicio s : db4oService.retrieveAllServicio()) {
+			if(s.getNombre().equals(txtNombreServicioEditar.getText()) && !txtNombreServicioEditar.getText().equals(cboxServicios.getValue().getNombre())){
+				alertaNombreRepetido();
+				return false;
+			}
+		}
+		
+		return true;
+	}
 	
+	private boolean validarServicio() {
+
+		for(Servicio s : db4oService.retrieveAllServicio()) {
+			if(s.getNombre().equals(txtNombreServicioEditar.getText())){
+				alertaNombreRepetido();
+				return false;
+			}
+		}
+		
+		return true;
+	}
 	
 	private boolean validarEleccion() {
 		if(cboxServicios.getValue() == null) {
@@ -445,6 +494,15 @@ public class AdministradorController implements Initializable{
 		else{
 			return true;
 		}
+	}
+	
+	
+	
+	private void alertaNombreRepetido() {
+		Alert alerta = new Alert(AlertType.WARNING);
+		alerta.setTitle("Servicio ya existente");
+		alerta.setContentText("Ya existe un servicio con ese nombre");
+		alerta.show();
 	}
 	
 	private void alertaRegionVacia() {
