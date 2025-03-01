@@ -44,6 +44,7 @@ import javafx.scene.control.CheckBox;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.DatePicker;
 import javafx.scene.control.Label;
+import javafx.scene.control.SelectionMode;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextArea;
@@ -180,7 +181,29 @@ public class ResponsableController implements Initializable{
         
     @FXML
     private AnchorPane panelEnvios;
+    
+    @FXML
+    private TableView<EnvioACasa> tablaEnvios;
         
+        @FXML
+        private TableColumn<EnvioACasa, Long> columnaEnviosId = new TableColumn<>("Id");
+        
+        @FXML
+        private TableColumn<EnvioACasa, Double> columnaEnviosPeso = new TableColumn<>("Peso");
+
+        @FXML
+        private TableColumn<EnvioACasa, String> columnaEnviosVolumen = new TableColumn<>("Volumen");
+        
+        @FXML
+        private TableColumn<EnvioACasa, Boolean> columnaEnviosUrgente = new TableColumn<>("Urgente");
+        
+        @FXML
+        private TableColumn<EnvioACasa, String> columnaEnviosDireccion = new TableColumn<>("Direccion");
+        
+        @FXML
+        private TableColumn<EnvioACasa, String> columnaEnviosLocalidad = new TableColumn<>("Localidad");
+    
+    
     @Autowired
     private DB4OService db4oService;
     
@@ -209,15 +232,31 @@ public class ResponsableController implements Initializable{
 	
 	private ObservableList<Estancia> estanciasTabla = FXCollections.observableArrayList(estancias);
 	
-	private List<Servicio> serviciosSeleccionados = new ArrayList<>();
+	private List<Servicio> serviciosSeleccionados = null;
 	
 	private ObservableList<Servicio> serviciosTabla = FXCollections.observableArrayList();
+	
+	private ObservableList<EnvioACasa> enviosTabla = FXCollections.observableArrayList();
 	
 	private boolean visible = false;
 	
 	
 	@Override
 	public void initialize(URL location, ResourceBundle resources) {
+		
+		visible = false;
+		panelEnvio.setVisible(false);
+		
+		
+		tablaEnvios.setItems(enviosTabla);
+		
+		columnaEnviosId.setCellValueFactory(new PropertyValueFactory<>("idEnvio"));
+		columnaEnviosPeso.setCellValueFactory(new PropertyValueFactory<>("peso"));
+		columnaEnviosUrgente.setCellValueFactory(new PropertyValueFactory<>("urgente"));
+		
+		columnaEnviosVolumen.setCellValueFactory(cellData ->new SimpleStringProperty(cellData.getValue().volumenToString()));
+		columnaEnviosDireccion.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getDireccion().getDireccion()));
+		columnaEnviosLocalidad.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getDireccion().getLocalidad()));
 		
 		
 		tablaServicios.setItems(serviciosTabla);
@@ -227,6 +266,8 @@ public class ResponsableController implements Initializable{
 		
 		cboxPago.getItems().addAll("Efectivo", "Tarjeta", "Bizum");
 		
+		tablaServicios.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);	
+
 		tablaServicios.getSelectionModel().getSelectedItems().addListener((ListChangeListener<Servicio>) change -> {
 			
 			serviciosSeleccionados = tablaServicios.getSelectionModel().getSelectedItems();
@@ -242,19 +283,6 @@ public class ResponsableController implements Initializable{
 			}
 			
         });
-		
-		ckServicios.setOnAction(event -> {
-			if(serviciosTabla.size()>0 && !visible) {
-						
-				visible = !visible;		
-				panelConjunto.setVisible(visible);
-			}
-			else if(serviciosTabla.size()<=0){
-				noHayServiciosParada();
-			}
-			
-			
-		});
 		
 		lblBienvenido.setText("Bienvenido/a, "+Sesion.getSesion().getUsuario());
 		
@@ -316,19 +344,12 @@ public class ResponsableController implements Initializable{
 		
 			if(ckEstancia.isSelected()) {
 				ckVip.setVisible(true);
-				lblCkVip.setVisible(true);
-				
-				ckServicios.setVisible(true);
-				lblServicios.setVisible(true);
+				lblCkVip.setVisible(true);			
 			}
 			else {
 				ckVip.setSelected(false);
 				ckVip.setVisible(false);
 				lblCkVip.setVisible(false);
-				
-				ckServicios.setSelected(false);
-				ckServicios.setVisible(false);
-				lblServicios.setVisible(false);
 			}
 			
 		});
@@ -336,6 +357,7 @@ public class ResponsableController implements Initializable{
 	}
 	
 	public void clickSellar() {
+				
 		
 		if(Utils.confirmarDatos().getResult().equals(ButtonType.OK)) {
 			if(txtId.getText().isBlank()) {
@@ -350,9 +372,16 @@ public class ResponsableController implements Initializable{
 			else if(peregrinoService.existsById(Long.valueOf(txtId.getText()))) {
 				
 				Peregrino peregrino = peregrinoService.find(Long.valueOf(txtId.getText()));					
+				boolean peregrinoYaSellado = false;
+				
+				for(Peregrino p : parada.getPeregrinos()) {
+					if(p.getId().equals(peregrino.getId())) {
+						peregrinoYaSellado = true;
+					}
+				}
 				
 				
-				if(parada.getPeregrinos().contains(peregrino)){	
+				if(peregrinoYaSellado){	
 					
 					alertaPeregrino();
 					}
@@ -383,6 +412,16 @@ public class ResponsableController implements Initializable{
 						peregrino.getEstancias().add(estancia);
 						peregrinoService.save(peregrino);
 				
+						if(serviciosTabla.size()>0 && !visible) {
+							
+							visible = !visible;		
+							panelConjunto.setVisible(visible);
+							contratar();
+						}
+						else if(serviciosTabla.size()<=0){
+							noHayServiciosParada();
+						}
+						peregrinoSellado();
 					}
 				}
 			}
@@ -390,92 +429,135 @@ public class ResponsableController implements Initializable{
 	}
 	
 	public void contratarServicios() {
-				
-		Servicio envio = new Servicio();
 		
-		if(visible) {
+		if(Utils.confirmarDatos().getResult().equals(ButtonType.OK)) {
+			Servicio envio = new Servicio();
 			
-			ConjuntoContratado cc = new ConjuntoContratado();
-			
-			cc.setId(db4oService.findConjuntoContratadoLastId());
-			
-			cc.setIdEstancia(estanciaService.findTopByOrderByIdDesc().getId());
-			
-			if(validarServicios() && validarPago()) {
+			if(visible) {
 				
-				double precio = 0.00;
+				ConjuntoContratado cc = new ConjuntoContratado();
 				
-				switch(cboxPago.getValue()) {
+				cc.setId(db4oService.findConjuntoContratadoLastId());
 				
-					case "Tarjeta" -> cc.setModoPago('T');
+				cc.setIdEstancia(estanciaService.findTopByOrderByIdDesc().getId());
+				
+				if(validarServicios() && validarPago()) {
 					
-					case "Efectivo" -> cc.setModoPago('E');
+					double precio = 0.00;
 					
-					case "Bizum" -> cc.setModoPago('B');
-				
-				}
-				
-				cc.setExtra(txtExtra.getText());
-				
-				for(Servicio s : serviciosSeleccionados) {
+					switch(cboxPago.getValue()) {
 					
-					precio+=s.getPrecio();
-					cc.getServicios().add(s.getId());
+						case "Tarjeta" -> cc.setModoPago('T');
+						
+						case "Efectivo" -> cc.setModoPago('E');
+						
+						case "Bizum" -> cc.setModoPago('B');
 					
-					if(s.getNombre().equals("Envio a Casa")) {
-						envio = s;
 					}
-				}
-				
-				DecimalFormat df = new DecimalFormat("#.00");
-				
-				precio = Double.valueOf(df.format(precio).replace(',', '.'));
-				
-				cc.setPrecioTotal(precio);
-				
-				db4oService.storeConjuntoContratado(cc);
-				
-				if(panelEnvio.isVisible()) {
 					
-					if(validarDireccion(txtDireccion.getText())
-						&& Utils.validarNombre(txtLocalidad.getText())
-						&& validarPeso(txtPeso.getText())
-						&& validarVolumen(txtX.getText())
-						&& validarVolumen(txtY.getText())
-						&& validarVolumen(txtZ.getText())
-							) {
+					cc.setExtra(txtExtra.getText());
+					
+					for(Servicio s : serviciosSeleccionados) {
 						
-						EnvioACasa e = new EnvioACasa();
+						precio+=s.getPrecio();
+						cc.getServicios().add(s.getId());
 						
-						int[] volumen = new int[3];
-						
-						volumen[0] = Integer.valueOf(txtX.getText());
-						volumen[1] = Integer.valueOf(txtY.getText());
-						volumen[2] = Integer.valueOf(txtZ.getText());
-						
-						e.setId(envio.getId());
-						e.setNombre(envio.getNombre());
-						e.setParadas(envio.getParadas());
-						e.setPrecio(envio.getPrecio());
-						e.setConjuntos(envio.getConjuntos());
-						e.getConjuntos().add(cc.getId());
-						e.setParada(Sesion.getSesion().getId());
-						
-						Direccion d = new Direccion(txtDireccion.getText(), txtLocalidad.getText());
-														
-						e.setDireccion(d);
-						e.setVolumen(volumen);
-						
-						if(ckUrgente.isSelected()) {
-							e.setUrgente(true);
+						if(s.getNombre().equals("Envio a Casa")) {
+							envio = s;
 						}
-						
-						odbService.storeEnvio(e);
-						
 					}
-				}								
+					
+					DecimalFormat df = new DecimalFormat("#.00");
+					
+					precio = Double.valueOf(df.format(precio).replace(',', '.'));
+					
+					cc.setPrecioTotal(precio);
+					
+					if(!panelEnvio.isVisible()) {
+					
+						db4oService.storeConjuntoContratado(cc);
+						
+						for(Servicio s : serviciosSeleccionados) {
+							
+							s.getConjuntos().add(cc.getId());
+							db4oService.updateServicio(s.getId(), s);
+						}
+					}				
+					else if(panelEnvio.isVisible()) {
+						
+						
+						
+						if(validarDireccion(txtDireccion.getText())
+							&& Utils.validarNombre(txtLocalidad.getText())
+							&& validarPeso(txtPeso.getText())
+							&& validarVolumen(txtX.getText())
+							&& validarVolumen(txtY.getText())
+							&& validarVolumen(txtZ.getText())
+								) {
+							
+							db4oService.storeConjuntoContratado(cc);
+							
+							for(Servicio s : serviciosSeleccionados) {
+								
+								s.getConjuntos().add(cc.getId());
+								db4oService.updateServicio(s.getId(), s);
+							}
+							
+							
+							EnvioACasa e = new EnvioACasa();
+							
+							int[] volumen = new int[3];
+							
+							volumen[0] = Integer.valueOf(txtX.getText());
+							volumen[1] = Integer.valueOf(txtY.getText());
+							volumen[2] = Integer.valueOf(txtZ.getText());
+							
+							e.setId(envio.getId());
+							e.setNombre(envio.getNombre());
+							e.setParadas(envio.getParadas());
+							e.setPrecio(envio.getPrecio());
+							e.setConjuntos(envio.getConjuntos());
+							e.getConjuntos().add(cc.getId());
+							e.setParada(Sesion.getSesion().getId());
+							
+							Direccion d = new Direccion(txtDireccion.getText(), txtLocalidad.getText());
+									
+							e.setPeso(Double.valueOf(txtPeso.getText()));
+							e.setDireccion(d);
+							e.setVolumen(volumen);
+							
+							if(ckUrgente.isSelected()) {
+								e.setUrgente(true);
+							}
+							
+							odbService.storeEnvio(e);
+							
+							
+							
+							visible = false;
+							panelConjunto.setVisible(false);
+							panelEnvio.setVisible(false);
+							
+							tablaServicios.getSelectionModel().clearSelection();
+							
+							serviciosSeleccionados = null;
+							
+							cboxPago.setValue(null);
+							txtDireccion.setText("");
+							txtExtra.setText("");
+							txtLocalidad.setText("");
+							txtPeso.setText("");
+							txtX.setText("");
+							txtY.setText("");
+							txtZ.setText("");
+							
+							serviciosContratados();
+						}
+					}								
+				}
 			}
 		}
+		
 	}
 	
 
@@ -522,6 +604,7 @@ public class ResponsableController implements Initializable{
 	
 	public void clickMenuExportar() {
 		
+		panelEnvios.setVisible(false);
 		panelExportar.setVisible(true);
 		panelPrincipal.setVisible(false);
 		panelSellar.setVisible(false);
@@ -530,6 +613,8 @@ public class ResponsableController implements Initializable{
 	public void clickMenuSellar() {
 		
 		if(db4oService.retrieveAllServicio().size()>0) {
+			
+			serviciosTabla.clear();
 			
 			for(Servicio s : db4oService.retrieveAllServicio()) {
 				
@@ -545,13 +630,28 @@ public class ResponsableController implements Initializable{
 		else {
 			Utils.noHayServicios();
 		}
-
+		
+		
+		
+		panelEnvios.setVisible(false);
 		panelSellar.setVisible(true);
 		panelExportar.setVisible(false);
 		panelPrincipal.setVisible(false);
 		
 	}
 	
+	public void clickMenuEnvios() {
+		
+		if(odbService.retrieveAllEnvios(Sesion.getSesion().getId())!=null) {
+			enviosTabla.addAll(odbService.retrieveAllEnvios(Sesion.getSesion().getId()));
+		}
+		
+		
+		panelEnvios.setVisible(true);
+		panelSellar.setVisible(false);
+		panelExportar.setVisible(false);
+		panelPrincipal.setVisible(false);
+	}
 	
 	
 	public void clickCerrarSesion() {
@@ -598,7 +698,7 @@ public class ResponsableController implements Initializable{
 	
 	private boolean validarDireccion(String direccion) {
 		
-		String regex = "^(?i)(Calle|Avda\\.?|Avenida|Plaza|Paseo|Ronda|Carretera)\\s+[A-Za-zÁÉÍÓÚáéíóúÑñ\\s\\.\\-]+,\\s*\\d+[A-Za-z]?\\s*,\\s*\\d{5}\\s+[A-Za-zÁÉÍÓÚáéíóúÑñ\\s]+$\r\n";
+		String regex = "^(?i)(Calle|Avda\\.?|Avenida|Plaza|Paseo|Ronda|Carretera)\\s+[A-Za-zÁÉÍÓÚáéíóúÑñ\\s\\.\\-]+,\\s*\\d+[A-Za-z]?\\s*,\\s*\\d{5}\\s+[A-Za-zÁÉÍÓÚáéíóúÑñ\\s]+$";
 		Pattern pattern = Pattern.compile(regex);
         Matcher matcher = pattern.matcher(direccion);
         
@@ -617,7 +717,7 @@ public class ResponsableController implements Initializable{
 	}
 	
 	public boolean validarPeso(String peso) {
-		String pesoRegex = "^\\d+\\.\\d{2}$";
+		String pesoRegex = "^[1-9]\\d*\\.\\d{2}$";
         Pattern pattern = Pattern.compile(pesoRegex);
         Matcher matcher = pattern.matcher(peso);
         
@@ -636,7 +736,7 @@ public class ResponsableController implements Initializable{
 	
 	private boolean validarVolumen(String volumen) {
 		
-		String regex = "^[1-9]\\d*$\r\n";
+		String regex = "^[1-9]\\d*$";
 		Pattern pattern = Pattern.compile(regex);
         Matcher matcher = pattern.matcher(volumen);
         
@@ -655,7 +755,7 @@ public class ResponsableController implements Initializable{
 	}
 	
 	private boolean validarServicios() {
-		if(serviciosSeleccionados.size()>0) {
+		if(serviciosSeleccionados != null) {
 			return true;
 		}
 		else {
@@ -665,7 +765,7 @@ public class ResponsableController implements Initializable{
 	}
 	
 	private boolean validarPago() {
-		if(cboxPago.getValue().isEmpty()) {
+		if(cboxPago.getValue()==null) {
 			alertaPagoVacio();
 			return false;
 		}
@@ -691,7 +791,8 @@ public class ResponsableController implements Initializable{
 	private void alertaDireccion() {
 		Alert alerta = new Alert(AlertType.WARNING);
 		alerta.setTitle("Direccion invalida");
-		alerta.setContentText("Introduce una direccion valida");
+		alerta.setContentText("Introduce una direccion valida \n"
+				+ "Calle o parecidos [Nombre de la calle], [numero de portal], [codigo postal] [Localidad]");
 		alerta.show();
 	}
 	
@@ -785,6 +886,27 @@ public class ResponsableController implements Initializable{
 		Alert alerta = new Alert(AlertType.WARNING);
 		alerta.setTitle("Fechas incorrectas");
 		alerta.setContentText("La primera fecha es despues de la segunda fecha");
+		alerta.show();
+	}
+	
+	private void serviciosContratados() {
+		Alert alerta = new Alert(AlertType.INFORMATION);
+		alerta.setTitle("Servicios contratados");
+		alerta.setContentText("Servicios contratados");
+		alerta.show();
+	}
+	
+	private void peregrinoSellado() {
+		Alert alerta = new Alert(AlertType.INFORMATION);
+		alerta.setTitle("Peregrino sellado");
+		alerta.setContentText("Peregrino sellado");
+		alerta.show();
+	}
+	
+	private void contratar() {
+		Alert alerta = new Alert(AlertType.INFORMATION);
+		alerta.setTitle("Servicios contratables");
+		alerta.setContentText("Si el peregrino quiere contratar algun servicio, seleccionalos, rellena los datos y confirma la contratacion");
 		alerta.show();
 	}
 	

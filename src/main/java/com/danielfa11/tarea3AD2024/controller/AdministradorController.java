@@ -346,13 +346,16 @@ public class AdministradorController implements Initializable{
 			
 			for(Parada p : paradasSeleccionadasEditar) {
 				s.getParadas().add(p.getId());
+				System.out.println(p.getId());
 			}
 			
 			db4oService.updateServicio(s.getId(), s);
-			
-			
+			System.out.println(db4oService.retrieveServicio(s.getId()).toString());  
+		
 			cboxServicios.getItems().clear();
 			cboxServicios.getItems().addAll(db4oService.retrieveAllServicio());
+	
+
 			txtNombreServicioEditar.clear();
 			txtPrecioEditar.clear();
 			tablaEditarServicio.getSelectionModel().clearSelection();
@@ -390,9 +393,10 @@ public class AdministradorController implements Initializable{
 	
 	public void clickMenuEditarServicio() {
 
-		if(db4oService.retrieveAllServicio().size()>0) {
+		if(db4oService.retrieveAllServicio()!=null) {
 			cboxServicios.getItems().clear();
 			cboxServicios.getItems().addAll(db4oService.retrieveAllServicio());
+			System.out.println(db4oService.retrieveServicio(1L));  
 		}
 		else {
 			Utils.noHayServicios();
@@ -465,12 +469,16 @@ public class AdministradorController implements Initializable{
 	
 	private boolean validarServicio() {
 
-		for(Servicio s : db4oService.retrieveAllServicio()) {
-			if(s.getNombre().equals(txtNombreServicioEditar.getText())){
-				alertaNombreRepetido();
-				return false;
+		if(db4oService.retrieveAllServicio()!=null) {
+			for(Servicio s : db4oService.retrieveAllServicio()) {
+				if(s.getNombre().equals(txtNombreServicioEditar.getText())){
+					alertaNombreRepetido();
+					return false;
+				}
 			}
 		}
+		
+		
 		
 		return true;
 	}

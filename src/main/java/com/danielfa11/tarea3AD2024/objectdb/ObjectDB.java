@@ -13,7 +13,7 @@ public class ObjectDB {
 
 	private static ObjectDB instance;
 	
-	private EntityManagerFactory emf = Persistence.createEntityManagerFactory("/objectdb/odb.odb");
+	private EntityManagerFactory emf = Persistence.createEntityManagerFactory("./src/main/resources/objectdb/odb.odb");
 	private static EntityManager em;
 	
 	private ObjectDB() {

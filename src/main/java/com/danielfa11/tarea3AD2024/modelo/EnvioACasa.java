@@ -134,6 +134,15 @@ public class EnvioACasa extends Servicio {
 				+ ", urgente=" + urgente + ", direccion=" + direccion + ", parada=" + parada + "]";
 	}
 	
+	public String volumenToString() {
+		
+		int[] vol = this.getVolumen();
+		
+		String volumen = vol[0]+" - "+vol[1]+" - "+vol[2];
+		
+		return volumen;
+	}
+	
 	
 	
 	

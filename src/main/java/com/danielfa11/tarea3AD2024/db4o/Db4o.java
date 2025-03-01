@@ -4,6 +4,7 @@ import org.springframework.stereotype.Component;
 
 import com.db4o.Db4oEmbedded;
 import com.db4o.ObjectContainer;
+import com.db4o.config.EmbeddedConfiguration;
 
 
 @Component
@@ -28,8 +29,10 @@ public class Db4o {
 	
 	public ObjectContainer getDb() {
 		if(db==null || db.ext().isClosed()) {
-			db=Db4oEmbedded.openFile(Db4oEmbedded
-					.newConfiguration(), DB4OFILENAME);
+			EmbeddedConfiguration config = Db4oEmbedded.newConfiguration();
+			config.common().activationDepth(Integer.MAX_VALUE);
+			config.common().updateDepth(Integer.MAX_VALUE);
+			db=Db4oEmbedded.openFile(config, DB4OFILENAME);
 			return db;
 		}
 		return db;

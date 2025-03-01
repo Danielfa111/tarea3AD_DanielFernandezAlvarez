@@ -11,7 +11,6 @@ import com.db4o.ObjectContainer;
 import com.db4o.ObjectSet;
 import com.db4o.ext.DatabaseClosedException;
 import com.db4o.ext.DatabaseReadOnlyException;
-import com.db4o.query.Predicate;
 import com.db4o.query.Query;
 
 
@@ -21,7 +20,7 @@ public class DB4ORepository {
 	
 	private Db4o db4o = Db4o.getDb4o();
 	
-	private static ObjectContainer db;
+	private ObjectContainer db;
 	
 	public void storeServicio(Servicio servicio) {
 		db = db4o.getDb();
@@ -74,16 +73,33 @@ public class DB4ORepository {
         
 	}
 	
-	public ObjectSet<Servicio> retrieveAllServicio(){
+	public List<Servicio> listarServicios() {
 		
 		db = db4o.getDb();
 		
 		Query query=db.query();
         query.constrain(Servicio.class);
-        ObjectSet<Servicio> result=query.execute();
-
+        query.descend("id").orderAscending();
+        List<Servicio> result=query.execute();
         
         return result;
+        
+        
+	}
+	
+	public List<Servicio> retrieveAllServicio(){
+				
+		try {
+			db = db4o.getDb();
+			Query query=db.query();
+	        query.constrain(Servicio.class);
+	        query.descend("id").orderAscending();
+	        List<Servicio> result=query.execute();
+	        
+	        return result;
+        } catch (Exception e) {
+            return null;
+        }
 	}
 	
 	public ConjuntoContratado retrieveConjuntoContratado(Long id) {
@@ -105,13 +121,13 @@ public class DB4ORepository {
         }
 	}
 	
-	public ObjectSet<ConjuntoContratado> retrieveAllConjuntoContratado(){
+	public List<ConjuntoContratado> retrieveAllConjuntoContratado(){
 		
 		db = db4o.getDb();
 		
 		Query query=db.query();
         query.constrain(ConjuntoContratado.class);
-        ObjectSet<ConjuntoContratado> result=query.execute();
+        List<ConjuntoContratado> result=query.execute();
         
 		db4o.closeDb();
 		return result;
@@ -120,49 +136,71 @@ public class DB4ORepository {
 	
 	public void updateServicio(Long id, Servicio servicio) {
 		
-
-	 	db = db4o.getDb();
-
-        Query query = db.query();
-        query.constrain(Servicio.class);
-        query.descend("id").constrain(id);
-
-        ObjectSet<Servicio> resultado = query.execute();
-
-        Servicio s = resultado.next();
-
-        s.setNombre(servicio.getNombre());
-        s.setPrecio(servicio.getPrecio());
-        s.getParadas().clear();
 		
-		for(Long l : servicio.getParadas()) {
-			s.getParadas().add(l);
-		}
+		 try {
+			 
+			 	db = db4o.getDb();
 
-        db.store(s);
+	            Query query = db.query();
+	            query.constrain(Servicio.class);
+	            query.descend("id").constrain(id);
 
+	            ObjectSet<Servicio> resultado = query.execute();
+
+	            if (!resultado.isEmpty()) {
+
+	                Servicio s = resultado.next();
+
+	                s.setNombre(servicio.getNombre());
+	                s.setPrecio(servicio.getPrecio());
+	                s.getParadas().clear();
+	    			
+	    			for(Long l : servicio.getParadas()) {
+	    				s.getParadas().add(l);
+	    			}
+
+	                db.store(s);
+//	                db.commit();
+	                
+	                System.out.println("Parada actualizada con éxito.");
+	            } else {
+	                System.out.println("No se encontró una parada con ID: " + id);
+	            }
+	        } catch (Exception e) {
+	            System.out.println("error");
+	        } 
+		
 	}
 	
 	public void updateConjuntoContratado(Long id, ConjuntoContratado cc) {
 		
-	 	db = db4o.getDb();
-	 	
-        Query query = db.query();
-        query.constrain(Servicio.class);
-        query.descend("id").constrain(id);
+		try {
+			
+		 	db = db4o.getDb();
+		 	
+            Query query = db.query();
+            query.constrain(Servicio.class);
+            query.descend("id").constrain(id);
 
-        ObjectSet<ConjuntoContratado> resultado = query.execute();
+            ObjectSet<ConjuntoContratado> resultado = query.execute();
 
-    	ConjuntoContratado c = resultado.next();
+            if (!resultado.isEmpty()) {
 
-    	c.setIdEstancia(cc.getIdEstancia());
-		c.setExtra(cc.getExtra());
-		c.setModoPago(cc.getModoPago());
-		c.setPrecioTotal(cc.getPrecioTotal());
-		c.setServicios(cc.getServicios());
-		
+            	ConjuntoContratado c = resultado.next();
 
-        db.store(c);
+            	c.setIdEstancia(cc.getIdEstancia());
+        		c.setExtra(cc.getExtra());
+        		c.setModoPago(cc.getModoPago());
+        		c.setPrecioTotal(cc.getPrecioTotal());
+        		c.setServicios(cc.getServicios());
+    			
+
+                db.store(c);
+
+            }
+        } catch (Exception e) {
+            System.out.println("error");
+        } 
 
 	}
 	

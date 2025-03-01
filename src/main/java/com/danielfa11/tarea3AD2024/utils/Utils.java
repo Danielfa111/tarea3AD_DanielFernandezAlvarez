@@ -133,7 +133,7 @@ public class Utils {
     }
 	
 	public static boolean validarPrecio(String precio) {
-		String precioRegex = "^\\d+\\.\\d{2}$";
+		String precioRegex = "^[1-9]\\d*\\.\\d{2}$";
         Pattern pattern = Pattern.compile(precioRegex);
         Matcher matcher = pattern.matcher(precio);
         

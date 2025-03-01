@@ -1,5 +1,7 @@
 package com.danielfa11.tarea3AD2024.services;
 
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -15,6 +17,10 @@ public class ODBService {
 	public void storeEnvio(EnvioACasa envio) {
 			
 		odbRepository.storeEnvio(envio);
+	}
+	
+	public List<EnvioACasa> retrieveAllEnvios(Long idParada){
+		return odbRepository.retrieveAllEnvios(idParada);
 	}
 	
 }
