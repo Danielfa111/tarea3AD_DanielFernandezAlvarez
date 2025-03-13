@@ -16,14 +16,13 @@ import com.danielfa11.tarea3AD2024.modelo.Servicio;
 import com.danielfa11.tarea3AD2024.modelo.Sesion;
 import com.danielfa11.tarea3AD2024.modelo.Usuario;
 import com.danielfa11.tarea3AD2024.services.DB4OService;
+import com.danielfa11.tarea3AD2024.services.EXISTDBService;
 import com.danielfa11.tarea3AD2024.services.ParadaService;
 import com.danielfa11.tarea3AD2024.services.UsuarioService;
 import com.danielfa11.tarea3AD2024.utils.Utils;
 import com.danielfa11.tarea3AD2024.view.FxmlView;
 
 import javafx.application.Platform;
-import javafx.beans.property.SimpleObjectProperty;
-import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
@@ -162,6 +161,9 @@ public class AdministradorController implements Initializable{
 	private ParadaService paradaService;
 	
 	@Autowired
+	private EXISTDBService existdbService;
+	
+	@Autowired
 	private DB4OService db4oService;
     	
     private ObservableList<Parada> paradasTabla = FXCollections.observableArrayList();
@@ -282,6 +284,8 @@ public class AdministradorController implements Initializable{
 				usuario.setId(parada.getId());
 				
 				usuario = usuarioService.save(usuario);
+				
+				existdbService.getOrCreateCollection("/"+parada.getNombre());
 				
 				Sesion.getSesion().setId(usuario.getId());
 				Sesion.getSesion().setPerfil(usuario.getRol());

@@ -1,6 +1,7 @@
 package com.danielfa11.tarea3AD2024.controller;
 
 import java.io.File;
+import java.io.StringWriter;
 import java.net.URL;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -9,6 +10,7 @@ import java.util.ResourceBundle;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.OutputKeys;
 import javax.xml.transform.Result;
 import javax.xml.transform.Source;
 import javax.xml.transform.Transformer;
@@ -33,6 +35,7 @@ import com.danielfa11.tarea3AD2024.modelo.Peregrino;
 import com.danielfa11.tarea3AD2024.modelo.Sesion;
 import com.danielfa11.tarea3AD2024.modelo.Usuario;
 import com.danielfa11.tarea3AD2024.services.CarnetService;
+import com.danielfa11.tarea3AD2024.services.EXISTDBService;
 import com.danielfa11.tarea3AD2024.services.PeregrinoService;
 import com.danielfa11.tarea3AD2024.services.UsuarioService;
 import com.danielfa11.tarea3AD2024.utils.Utils;
@@ -102,6 +105,9 @@ public class PeregrinoController implements Initializable{
 	
 	@FXML
 	private Button btnConfirmar;
+	
+	@Autowired
+	private EXISTDBService existdbService;
 	
 	@Autowired
 	private PeregrinoService peregrinoService;
@@ -301,18 +307,24 @@ public class PeregrinoController implements Initializable{
 	                        
 	                }
 	             
-	            // Generando el fichero XML
-	                
-//	            FileChooser fc = new FileChooser();
-//	            fc.setTitle("Guardar carnet");
-//	            File ruta = fc.showSaveDialog(new Stage());
 	                
 	            Source fuente = new DOMSource(documento);
-	            File fichero = new File("src/main/resources/Carnets/"+carnetPeregrino.getPropietario().getNombre()+"_carnet.xml");
+	            File fichero = new File("src/main/resources/Carnets/"+carnetPeregrino.getPropietario().getNombre()+"_carnet.xml");	            
 	            Result resultado = new StreamResult(fichero);
 	            TransformerFactory fabricaTransformador = TransformerFactory.newInstance();
 	            Transformer transformador = fabricaTransformador.newTransformer();
 	            transformador.transform(fuente, resultado);
+	            
+	            transformador.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "no");
+				transformador.setOutputProperty(OutputKeys.METHOD, "xml");
+				transformador.setOutputProperty(OutputKeys.INDENT, "yes");
+				transformador.setOutputProperty(OutputKeys.ENCODING, "UTF-8");
+
+				StringWriter escribe = new StringWriter();
+				transformador.transform(new DOMSource(documento), new StreamResult(escribe));
+	            
+	            existdbService.store(escribe.toString(), "/"+carnetPeregrino.getParadaInicial().getNombre(), carnetPeregrino.getPropietario().getNombre());
+	            
 	        } catch (ParserConfigurationException ex) {
 	            System.out.println("Error: " + ex.getMessage());
 	        } catch (TransformerConfigurationException ex) {

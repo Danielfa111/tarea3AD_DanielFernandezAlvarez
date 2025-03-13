@@ -23,6 +23,7 @@ import com.danielfa11.tarea3AD2024.modelo.Peregrino;
 import com.danielfa11.tarea3AD2024.modelo.Servicio;
 import com.danielfa11.tarea3AD2024.modelo.Sesion;
 import com.danielfa11.tarea3AD2024.services.DB4OService;
+import com.danielfa11.tarea3AD2024.services.EXISTDBService;
 import com.danielfa11.tarea3AD2024.services.EstanciaService;
 import com.danielfa11.tarea3AD2024.services.ODBService;
 import com.danielfa11.tarea3AD2024.services.ParadaService;
@@ -49,6 +50,8 @@ import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
+import javafx.scene.control.TreeItem;
+import javafx.scene.control.TreeView;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.GridPane;
@@ -202,14 +205,18 @@ public class ResponsableController implements Initializable{
         
         @FXML
         private TableColumn<EnvioACasa, String> columnaEnviosLocalidad = new TableColumn<>("Localidad");
+
+    @FXML
+    private AnchorPane panelCarnets;
     
+    @FXML
+    private TreeView<String> treeView;
     
     @Autowired
     private DB4OService db4oService;
     
     @Autowired
     private ODBService odbService;
-    
 
 	@Autowired
 	private EstanciaService estanciaService;
@@ -220,6 +227,8 @@ public class ResponsableController implements Initializable{
 	@Autowired
 	private PeregrinoService peregrinoService;	
 
+	@Autowired
+	private EXISTDBService existdbService;
 	
 	
 	@Lazy
@@ -593,7 +602,9 @@ public class ResponsableController implements Initializable{
 		        if(!alert.getResult().equals(ButtonType.OK)) {
 		        	panelPrincipal.setVisible(true);
 		        	panelSellar.setVisible(false);
-		    		panelExportar.setVisible(false);		    		
+		    		panelExportar.setVisible(false);	
+		    		panelCarnets.setVisible(false);
+		    		estanciasTabla.clear();
 		        }
 			}
 		}
@@ -608,6 +619,7 @@ public class ResponsableController implements Initializable{
 		panelExportar.setVisible(true);
 		panelPrincipal.setVisible(false);
 		panelSellar.setVisible(false);
+		panelCarnets.setVisible(false);
 	}
 	
 	public void clickMenuSellar() {
@@ -637,6 +649,43 @@ public class ResponsableController implements Initializable{
 		panelSellar.setVisible(true);
 		panelExportar.setVisible(false);
 		panelPrincipal.setVisible(false);
+		panelCarnets.setVisible(false);
+		
+	}
+	
+	public void clickMenuCarnets() {
+		
+		panelEnvios.setVisible(false);
+		panelSellar.setVisible(false);
+		panelExportar.setVisible(false);
+		panelPrincipal.setVisible(false);
+		panelCarnets.setVisible(true);
+				
+		treeView.setRoot(null);
+		
+		int contador = 0;
+		
+	    List<String> xmls = existdbService.getAllResourcesFromCollection("/"+parada.getNombre());
+
+	    TreeItem<String> rootItem = new TreeItem<>("Carnets");
+		rootItem.setExpanded(true);
+
+	    for (String xml : xmls) {
+	    	contador++;
+	        TreeItem<String> xmlItem = new TreeItem<>("Carnet "+contador);
+	        
+	        String[] lineas = xml.split("\n");
+	        for (String linea : lineas) {
+	            xmlItem.getChildren().add(new TreeItem<>(linea));
+	        }
+
+	        rootItem.getChildren().add(xmlItem);
+	    }
+
+	    treeView.setRoot(rootItem);
+	    
+		
+		
 		
 	}
 	
@@ -644,14 +693,15 @@ public class ResponsableController implements Initializable{
 		
 		if(odbService.retrieveAllEnvios(Sesion.getSesion().getId())!=null) {
 			enviosTabla.addAll(odbService.retrieveAllEnvios(Sesion.getSesion().getId()));
-		}
-		
+		}		
 		
 		panelEnvios.setVisible(true);
 		panelSellar.setVisible(false);
 		panelExportar.setVisible(false);
+		panelCarnets.setVisible(false);
 		panelPrincipal.setVisible(false);
 	}
+	
 	
 	
 	public void clickCerrarSesion() {

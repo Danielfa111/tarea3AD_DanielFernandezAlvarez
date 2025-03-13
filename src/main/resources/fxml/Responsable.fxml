@@ -13,6 +13,7 @@
 <?import javafx.scene.control.TableView?>
 <?import javafx.scene.control.TextArea?>
 <?import javafx.scene.control.TextField?>
+<?import javafx.scene.control.TreeView?>
 <?import javafx.scene.image.Image?>
 <?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.AnchorPane?>
@@ -477,6 +478,11 @@
                   </Label>
                </children>
             </AnchorPane>
+            <AnchorPane fx:id="panelCarnets" prefHeight="425.0" prefWidth="881.0" visible="false">
+               <children>
+                  <TreeView fx:id="treeView" layoutX="14.0" layoutY="17.0" prefHeight="392.0" prefWidth="854.0" />
+               </children>
+            </AnchorPane>
          </children>
       </Pane>
    </center>
@@ -488,6 +494,7 @@
                   <MenuItem mnemonicParsing="false" onAction="#clickMenuSellar" text="Sellar Carnet" />
                   <MenuItem mnemonicParsing="false" onAction="#clickMenuExportar" text="Exportar Parada" />
                   <MenuItem mnemonicParsing="false" onAction="#clickMenuEnvios" text="Ver Envios" />
+                  <MenuItem mnemonicParsing="false" onAction="#clickMenuCarnets" text="Ver Carnets" />
                   <MenuItem mnemonicParsing="false" onAction="#clickCerrarSesion" text="Cerrar Sesión" />
               <MenuItem mnemonicParsing="false" onAction="#clickSalir" text="Salir" />
             </items>
