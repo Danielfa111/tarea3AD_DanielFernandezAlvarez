@@ -148,6 +148,7 @@ public class RegistroController implements Initializable{
 		
 		if(Utils.confirmarDatos().getResult().equals(ButtonType.OK)) {
 			if(Utils.validarNombre(txtNombre.getText())
+				&& Utils.validarUsuario(txtUsuario.getText())
 				&& usuarioExistente(txtUsuario.getText())
 				&& Utils.validarContraseña(ptxtContraseña.getText())
 				&& contraseñasIguales()

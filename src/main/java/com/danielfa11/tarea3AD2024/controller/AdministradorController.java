@@ -1,23 +1,33 @@
 package com.danielfa11.tarea3AD2024.controller;
 
 import java.net.URL;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.ResourceBundle;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
+import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.stereotype.Controller;
 
 import com.danielfa11.tarea3AD2024.config.StageManager;
+import com.danielfa11.tarea3AD2024.modelo.Carnet;
+import com.danielfa11.tarea3AD2024.modelo.Estancia;
 import com.danielfa11.tarea3AD2024.modelo.Parada;
+import com.danielfa11.tarea3AD2024.modelo.Peregrino;
 import com.danielfa11.tarea3AD2024.modelo.Servicio;
 import com.danielfa11.tarea3AD2024.modelo.Sesion;
 import com.danielfa11.tarea3AD2024.modelo.Usuario;
 import com.danielfa11.tarea3AD2024.services.DB4OService;
 import com.danielfa11.tarea3AD2024.services.EXISTDBService;
 import com.danielfa11.tarea3AD2024.services.ParadaService;
+import com.danielfa11.tarea3AD2024.services.PeregrinoService;
 import com.danielfa11.tarea3AD2024.services.UsuarioService;
 import com.danielfa11.tarea3AD2024.utils.Utils;
 import com.danielfa11.tarea3AD2024.view.FxmlView;
@@ -161,7 +171,13 @@ public class AdministradorController implements Initializable{
 	private ParadaService paradaService;
 	
 	@Autowired
+	private PeregrinoService peregrinoService;
+	
+	@Autowired
 	private EXISTDBService existdbService;
+	
+	@Autowired
+	MongoTemplate mongoTemplate;
 	
 	@Autowired
 	private DB4OService db4oService;
@@ -264,6 +280,7 @@ public class AdministradorController implements Initializable{
 		if(Utils.confirmarDatos().getResult().equals(ButtonType.OK)) {
 			if(Utils.validarNombre(txtNombre.getText())
 				&& usuarioExistente(txtUsuario.getText())
+				&& Utils.validarUsuario(txtUsuario.getText())
 				&& Utils.validarContraseña(ptxtContraseña.getText())
 				&& Utils.validarEmail(txtCorreo.getText())
 				&& validarRegion()
@@ -421,6 +438,62 @@ public class AdministradorController implements Initializable{
 		panelEditarServicio.setVisible(true);
 	}
 	
+	public void clickBackup() {
+		
+		List<Peregrino> peregrinos = peregrinoService.findAll();
+			
+        List<Map<String, Object>> carnets = new ArrayList<>();
+        
+        int contadorOrden = 1;
+        
+        for (Peregrino p : peregrinos) {	
+        	
+            Carnet carnet = p.getCarnet();
+            Map<String, Object> carnetMap = new HashMap<>();
+            carnetMap.put("id", carnet.getId());
+            carnetMap.put("fechaExp", carnet.getFechaexp().format(DateTimeFormatter.ofPattern("dd-MM-yyyy")));
+            carnetMap.put("expedidoEn", carnet.getParadaInicial().getNombre());
+            
+            Map<String, Object> peregrinoMap = new HashMap<>();
+            peregrinoMap.put("nombre", p.getNombre());
+            peregrinoMap.put("nacionalidad", p.getNacionalidad());
+            carnetMap.put("peregrino", peregrinoMap);
+            
+            carnetMap.put("hoy", LocalDate.now().format(DateTimeFormatter.ofPattern("dd-MM-yyyy")));
+            carnetMap.put("distancia", carnet.getDistancia());            
+
+			Map<String, Object> paradaMap = new HashMap<>();
+            for (Parada pa : p.getParadas()) {
+            	paradaMap.put("orden", contadorOrden);
+                paradaMap.put("nombre", pa.getNombre());
+                paradaMap.put("region", pa.getRegion());
+                contadorOrden++;
+            }         
+            carnetMap.put("paradasVisitadas", paradaMap);
+            
+            Map<String, Object> estanciaMap = new HashMap<>();
+            for (Estancia estancia : p.getEstancias()) {          
+                estanciaMap.put("id", estancia.getId());
+                estanciaMap.put("fecha", estancia.getFecha().toString());
+                estanciaMap.put("parada", estancia.getParada().getNombre());
+                if(estancia.isVip()) {
+                	estanciaMap.put("vip", "Si");
+                }
+                
+            }           
+            carnetMap.put("estancias", estanciaMap);
+            
+            carnets.add(carnetMap);
+        }
+        String nombreBackup = "Backup de Carnets_" + LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy-HH:mm:ss"));
+        Map<String, Object> backup = new HashMap<>();
+        backup.put("nombre", nombreBackup);
+        backup.put("carnets", carnets);
+        
+        mongoTemplate.save(backup, "Backup de Carnets");
+        
+	}
+	
 	public void clickCerrarSesion() {
 		
 		Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
@@ -475,7 +548,7 @@ public class AdministradorController implements Initializable{
 
 		if(db4oService.retrieveAllServicio()!=null) {
 			for(Servicio s : db4oService.retrieveAllServicio()) {
-				if(s.getNombre().equals(txtNombreServicioEditar.getText())){
+				if(s.getNombre().equals(txtNombreServicio.getText())){
 					alertaNombreRepetido();
 					return false;
 				}

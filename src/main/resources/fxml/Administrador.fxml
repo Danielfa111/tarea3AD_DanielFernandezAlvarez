@@ -234,6 +234,7 @@
                   <MenuItem fx:id="miRegistrar" mnemonicParsing="false" onAction="#clickMenuRegistrar" text="Registrar Parada" />
                   <MenuItem mnemonicParsing="false" onAction="#clickMenuServicio" text="Crear Servicio" />
                   <MenuItem mnemonicParsing="false" onAction="#clickMenuEditarServicio" text="Editar Servicio" />
+                  <MenuItem mnemonicParsing="false" onAction="#clickBackup" text="Backup de Carnets" />
                   <MenuItem fx:id="miCSesion" mnemonicParsing="false" onAction="#clickCerrarSesion" text="Cerrar Sesión" />
               <MenuItem fx:id="miSalir" mnemonicParsing="false" onAction="#clickSalir" text="Salir" />
             </items>

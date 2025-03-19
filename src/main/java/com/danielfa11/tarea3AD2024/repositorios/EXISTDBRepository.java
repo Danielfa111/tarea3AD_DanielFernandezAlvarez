@@ -13,12 +13,12 @@ import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.CollectionManagementService;
 import org.xmldb.api.modules.XMLResource;
 
-import com.danielfa11.tarea3AD2024.existdb.Existdb;
+import com.danielfa11.tarea3AD2024.existdb.ExistDB;
 
 @Repository
 public class EXISTDBRepository {
 
-	private static Existdb existdb = Existdb.getExistdb();
+	private static ExistDB existdb = ExistDB.getExistdb();
 	
 	public void store(String fichero, String coleccion, String peregrino) {
 		Collection col = null;

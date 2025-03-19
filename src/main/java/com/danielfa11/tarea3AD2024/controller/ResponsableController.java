@@ -624,7 +624,7 @@ public class ResponsableController implements Initializable{
 	
 	public void clickMenuSellar() {
 		
-		if(db4oService.retrieveAllServicio().size()>0) {
+		if(db4oService.retrieveAllServicio()!=null) {
 			
 			serviciosTabla.clear();
 			

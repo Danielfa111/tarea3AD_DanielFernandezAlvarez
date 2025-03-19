@@ -10,22 +10,22 @@ import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.CollectionManagementService;
 
 @Component
-public class Existdb {
+public class ExistDB {
 
-	private static Existdb existdb;
+	private static ExistDB existdb;
 	
 	private static String URI = "xmldb:exist://localhost:8080/exist/xmlrpc";
 	private static Database database;
 	private static Collection paradas;
 	
 	 
-	private Existdb() {
+	private ExistDB() {
 		 
 	}
 	 
-	public static Existdb getExistdb() {
+	public static ExistDB getExistdb() {
 		 if(existdb == null) {
-			 existdb = new Existdb();
+			 existdb = new ExistDB();
 				Class<?> cl;
 				try {
 					cl = Class.forName("org.exist.xmldb.DatabaseImpl");

@@ -103,10 +103,26 @@ public class Utils {
 		}
 	}
 	
+	public static boolean validarUsuario(String usuario) {
+		if(usuario.isBlank()) {
+			alertaUsuarioVacio();
+			return false;
+		}
+		else if(usuario.contains(" ")) {
+			alertaUsuario();
+			return false;
+		}
+		return true;
+	}
+	
 	public static boolean validarContraseña(String contraseña) {
 		
 		if(contraseña.isBlank()) {
 			alertaContraseñaVacia();
+			return false;
+		}
+		else if(contraseña.contains(" ")){
+			alertaContraseña();
 			return false;
 		}
 		return true;
@@ -204,6 +220,27 @@ public class Utils {
 		Alert alerta = new Alert(AlertType.WARNING);
 		alerta.setTitle("Contraseña vacia");
 		alerta.setContentText("No dejes la contraseña vacia");
+		alerta.show();
+	}
+	
+	public static void alertaContraseña() {
+		Alert alerta = new Alert(AlertType.WARNING);
+		alerta.setTitle("Contraseña invalida");
+		alerta.setContentText("No introduzcas espacios en blanco");
+		alerta.show();
+	}
+	
+	public static void alertaUsuarioVacio() {
+		Alert alerta = new Alert(AlertType.WARNING);
+		alerta.setTitle("Usuario vacio");
+		alerta.setContentText("No dejes el usuario vacio");
+		alerta.show();
+	}
+	
+	public static void alertaUsuario() {
+		Alert alerta = new Alert(AlertType.WARNING);
+		alerta.setTitle("Usuario invalido");
+		alerta.setContentText("No introduzcas espacios en blanco");
 		alerta.show();
 	}
 	

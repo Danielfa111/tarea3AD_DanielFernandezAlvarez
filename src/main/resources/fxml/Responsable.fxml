@@ -478,7 +478,7 @@
                   </Label>
                </children>
             </AnchorPane>
-            <AnchorPane fx:id="panelCarnets" prefHeight="425.0" prefWidth="881.0" visible="false">
+            <AnchorPane fx:id="panelCarnets" prefHeight="425.0" prefWidth="881.0">
                <children>
                   <TreeView fx:id="treeView" layoutX="14.0" layoutY="17.0" prefHeight="392.0" prefWidth="854.0" />
                </children>
